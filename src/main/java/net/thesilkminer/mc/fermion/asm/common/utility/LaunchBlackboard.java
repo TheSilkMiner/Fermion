@@ -27,13 +27,25 @@ public final class LaunchBlackboard {
         for (@Nonnull final LaunchPlugin plugin : plugins) {
             this.accept(plugin);
         }
+
+        LOGGER.d("Validating environment for plugins");
         final FermionEnvironment environment = new FermionEnvironment(this.pluginsMap, fmlEnvironment);
-        // TODO Step 1: Environmental check for all plugins
+        try {
+            for (@Nonnull final Pair<PluginMetadata, LaunchPlugin> plugin : this.pluginsMap.values()) {
+                LOGGER.t("Validating environment for plugin '" + plugin.getKey().getId() + "'");
+                plugin.getValue().validateEnvironment(environment);
+            }
+        } catch (@Nonnull final net.thesilkminer.mc.fermion.asm.api.IncompatibleEnvironmentException exception) {
+            final IncompatibleEnvironmentException t = new IncompatibleEnvironmentException("A Fermion LaunchPlugin is not compatible with this environment");
+            t.initCause(exception);
+            throw t;
+        }
+
         // TODO Step 2: Gather transformers data and inject them into a map
     }
 
     private void accept(@Nonnull final LaunchPlugin plugin) throws IncompatibleEnvironmentException {
-        LOGGER.d("Attempting to load data from LaunchPlugin implementor " + plugin);
+        LOGGER.t("Attempting to load data from LaunchPlugin implementor " + plugin);
         final PluginMetadata pluginMetadata = plugin.getMetadata();
         final String pluginId = pluginMetadata.getId();
         if (this.pluginsMap.containsKey(pluginId)) {
@@ -44,6 +56,7 @@ public final class LaunchBlackboard {
         }
         LOGGER.i("Found Fermion LaunchPlugin with id '" + pluginId + "': performing registration");
         this.pluginsMap.put(pluginId, ImmutablePair.of(pluginMetadata, plugin));
+        LOGGER.t("Plugin '" + pluginId + "' registered successfully");
     }
 
     public void loadConfig(@Nonnull final Path root) {
