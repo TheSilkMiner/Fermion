@@ -159,10 +159,15 @@ public final class PluginMetadata {
 
         @Nonnull
         public PluginMetadata build() {
-            Preconditions.checkNotNull(this.name, "You must specify a name for your mod");
-            Preconditions.checkNotNull(this.version, "You must specify a version for your mod");
+            Preconditions.checkNotNull(this.name, "You must specify a name for your plugin");
+            Preconditions.checkNotNull(this.version, "You must specify a version for your plugin");
+            Preconditions.checkArgument(this.testId(), "The plugin id cannot contain colons");
             Preconditions.checkArgument(this.testUrl(), "The given URL is not valid");
             return new PluginMetadata(this);
+        }
+
+        private boolean testId() {
+            return this.id.matches("[a-z0-9.]{1,64}");
         }
 
         private boolean testUrl() {

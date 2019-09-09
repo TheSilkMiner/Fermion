@@ -41,7 +41,7 @@ public final class FermionTransformationService implements ITransformationServic
                 .orElseThrow(() -> new IllegalStateException("No game directory was found. This is a serious error"));
         final Path configDirectory = gameDirectory.resolve("config/FermionEnv").toAbsolutePath().normalize();
         FileUtils.getOrCreateDirectory(configDirectory, "FermionEnv");
-        LOGGER.d("Loading configuration files mod per mod");
+        LOGGER.d("Loading configuration files plugin per plugin");
         this.blackboard.loadConfig(configDirectory);
         LOGGER.i("Configuration loaded");
     }
@@ -54,10 +54,10 @@ public final class FermionTransformationService implements ITransformationServic
     @Override
     public final void onLoad(@Nonnull final IEnvironment env, @Nonnull final Set<String> otherServices) throws IncompatibleEnvironmentException {
         LOGGER.i("Fermion Transformer Service is being loaded");
-        LOGGER.i("Attempting to discover Fermion core-mods");
+        LOGGER.i("Attempting to discover Fermion Launch Plugins");
         final ServiceLoader<LaunchPlugin> launchPluginLoader = ServiceLoader.load(LaunchPlugin.class);
         this.blackboard.accept(launchPluginLoader, env);
-        LOGGER.i("Fermion core-mods discovery completed");
+        LOGGER.i("Fermion Launch Plugins discovery completed");
     }
 
     @Nonnull

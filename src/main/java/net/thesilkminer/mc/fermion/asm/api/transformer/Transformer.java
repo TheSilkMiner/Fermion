@@ -1,0 +1,19 @@
+package net.thesilkminer.mc.fermion.asm.api.transformer;
+
+import net.thesilkminer.mc.fermion.asm.api.configuration.TransformerConfiguration;
+import org.objectweb.asm.ClassVisitor;
+
+import javax.annotation.Nonnull;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
+
+public interface Transformer {
+
+    @Nonnull TransformerData getData();
+    @Nonnull Set<String> getClassesToTransform();
+    @Nonnull Supplier<TransformerConfiguration> provideConfiguration();
+    @Nonnull BiFunction<Integer, ClassVisitor, ClassVisitor> getClassVisitorCreator();
+
+    void applyConfiguration(@Nonnull final TransformerConfiguration configuration);
+}
