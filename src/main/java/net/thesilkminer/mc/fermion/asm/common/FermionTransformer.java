@@ -59,15 +59,34 @@ public final class FermionTransformer implements ITransformer<ClassNode> {
         final EffectivelyFinalByteArray finalClassBytes = EffectivelyFinalByteArray.of(classData);
         final List<Transformer> transformers = this.classToTransformer.get(className);
 
+        if (transformers.size() != 0) {
+            LOGGER.d("Injecting universal transformer 'fermion.asm.service:universal'");
+            transformers.add(new FermionUniversalTransformer());
+        }
+
+        transformers.sort((a, b) -> {
+            if (a instanceof FermionUniversalTransformer) return 1;
+            else if (b instanceof FermionUniversalTransformer) return -1;
+            else return 0;
+        });
+
         LOGGER.i("Found " + transformers.size() + " transformers available: running them one by one");
+        LOGGER.d("    " + transformers);
 
         transformers.forEach(it -> {
-            final String registryName = this.transformerToName.get(it);
+            final boolean isUniversal = it instanceof FermionUniversalTransformer;
+
+            final String registryName = isUniversal? FermionUniversalTransformer.TRANSFORMER_NAME : this.transformerToName.get(it);
+
             LOGGER.i("    Attempting to call transformer '" + registryName + "'");
 
-            final boolean isEnabled = this.registry.isTransformerEnabled(registryName);
+            final boolean isEnabled = (isUniversal && finalClassBytes.wasTransformed()) || (!isUniversal && this.registry.isTransformerEnabled(registryName));
             if (!isEnabled) {
-                LOGGER.w("        UNABLE TO CALL TRANSFORMER: It was disabled in the configuration file");
+                if (isUniversal) {
+                    LOGGER.w("        UNABLE TO CALL TRANSFORMER: Class wasn't patched previously");
+                } else {
+                    LOGGER.w("        UNABLE TO CALL TRANSFORMER: It was disabled in the configuration file");
+                }
                 return;
             }
 

@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 @SuppressWarnings("MethodCanBeVariableArityMethod")
 public final class EffectivelyFinalByteArray {
     private byte[] classBytes;
+    private boolean wasTransformed;
 
     private EffectivelyFinalByteArray(@Nonnull final byte[] classBytes) {
         this.classBytes = classBytes;
@@ -18,6 +19,11 @@ public final class EffectivelyFinalByteArray {
 
     public void transformInto(@Nonnull final byte[] classBytes) {
         this.classBytes = classBytes;
+        this.wasTransformed = true;
+    }
+
+    public boolean wasTransformed() {
+        return this.wasTransformed;
     }
 
     @Nonnull
