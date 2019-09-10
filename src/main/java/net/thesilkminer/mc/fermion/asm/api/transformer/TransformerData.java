@@ -13,6 +13,7 @@ public final class TransformerData {
         private String owningPluginId;
         private String name;
         private String description;
+        private boolean defaultDisabled;
 
         private Builder() {}
 
@@ -53,19 +54,32 @@ public final class TransformerData {
             return this;
         }
 
-        @Nullable
+        @Nonnull
+        public Builder setDisabledByDefault() {
+            if (this.defaultDisabled) {
+                throw new IllegalStateException("Unable to set disabled by default multiple times");
+            }
+            this.defaultDisabled = true;
+            return this;
+        }
+
+        @Nonnull
         String getOwningPlugin() {
             return this.owningPluginId;
         }
 
-        @Nullable
+        @Nonnull
         String getName() {
             return this.name;
         }
 
-        @Nullable
+        @Nonnull
         String getDescription() {
             return this.description;
+        }
+
+        boolean getDefaultDisabled() {
+            return this.defaultDisabled;
         }
 
         @Nonnull
@@ -85,26 +99,32 @@ public final class TransformerData {
     private final String owningPluginId;
     private final String name;
     private final String description;
+    private final boolean enabled;
 
     private TransformerData(@Nonnull final TransformerData.Builder builder) {
-        this.owningPluginId = builder.getOwningPlugin();
-        this.name = builder.getName();
-        this.description = builder.getDescription();
+        this.owningPluginId = Preconditions.checkNotNull(builder.getOwningPlugin());
+        this.name = Preconditions.checkNotNull(builder.getName());
+        this.description = Preconditions.checkNotNull(builder.getDescription());
+        this.enabled = !builder.getDefaultDisabled();
     }
 
-    @Nullable
+    @Nonnull
     public String getOwningPluginId() {
         return this.owningPluginId;
     }
 
-    @Nullable
+    @Nonnull
     public String getName() {
         return this.name;
     }
 
-    @Nullable
+    @Nonnull
     public String getDescription() {
         return this.description;
+    }
+
+    public boolean isEnabledByDefault() {
+        return this.enabled;
     }
 
     @Override
@@ -114,12 +134,13 @@ public final class TransformerData {
         final TransformerData that = (TransformerData) o;
         return Objects.equals(this.owningPluginId, that.owningPluginId) &&
                 Objects.equals(this.name, that.name) &&
-                Objects.equals(this.description, that.description);
+                Objects.equals(this.description, that.description) &&
+                Objects.equals(this.enabled, that.enabled);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.owningPluginId, this.name, this.description);
+        return Objects.hash(this.owningPluginId, this.name, this.description, this.enabled);
     }
 
     @Override
@@ -128,6 +149,7 @@ public final class TransformerData {
                 "owningPluginId='" + this.owningPluginId + '\'' +
                 ", name='" + this.name + '\'' +
                 ", description='" + this.description + '\'' +
+                ", enabled=" + this.enabled +
                 '}';
     }
 }

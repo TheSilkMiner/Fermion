@@ -1,5 +1,6 @@
 package net.thesilkminer.mc.fermion.asm.api.transformer;
 
+import com.google.gson.JsonObject;
 import net.thesilkminer.mc.fermion.asm.api.configuration.TransformerConfiguration;
 import org.objectweb.asm.ClassVisitor;
 
@@ -15,5 +16,7 @@ public interface Transformer {
     @Nonnull Supplier<TransformerConfiguration> provideConfiguration();
     @Nonnull BiFunction<Integer, ClassVisitor, ClassVisitor> getClassVisitorCreator();
 
-    void applyConfiguration(@Nonnull final TransformerConfiguration configuration);
+    default void applyConfiguration(@Nonnull final JsonObject configuration) {
+        this.provideConfiguration().get().getDeserializer().accept(configuration);
+    }
 }
