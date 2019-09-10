@@ -4,5 +4,5 @@ import javax.annotation.Nonnull;
 
 public interface TransformerRegistry {
     void registerTransformer(@Nonnull final Transformer transformer);
-    boolean isTransformerEnabled(@Nonnull final String id, @Nonnull final String transformerName);
+    boolean isTransformerEnabled(@Nonnull final String registryName);
 }

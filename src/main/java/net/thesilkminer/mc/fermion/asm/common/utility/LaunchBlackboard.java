@@ -128,20 +128,32 @@ public final class LaunchBlackboard implements TransformerRegistry {
                 .setPrettyPrinting()
                 .create();
 
+        /*mutable*/ JsonObject transformersConfigArray;
+
         try (final Reader reader = Files.newBufferedReader(transformersConfigFile)) {
 
-            final JsonObject transformersConfigArray = gson
+            transformersConfigArray = gson
                     .getAdapter(TypeToken.get(JsonObject.class))
                     .read(new JsonReader(reader));
+
+            final JsonObject finalTransformersConfigArray = transformersConfigArray;
 
             this.getTransformers()
                     .entrySet()
                     .stream()
                     .filter(it -> it.getKey().startsWith(id + ":"))
-                    .forEach(it -> this.loadTransformerConfig(transformersConfigArray, it.getKey(), it.getValue()));
+                    .forEach(it -> this.loadTransformerConfig(finalTransformersConfigArray, it.getKey(), it.getValue()));
 
+            transformersConfigArray = finalTransformersConfigArray;
         } catch (@Nonnull final IOException e) {
             throw new RuntimeException("An error has occurred while attempting to read the configuration file for plugin '" + id + "'", e);
+        }
+
+
+        try (final BufferedWriter writer = Files.newBufferedWriter(transformersConfigFile)) {
+            gson.toJson(transformersConfigArray, writer);
+        } catch (@Nonnull final IOException e) {
+            throw new RuntimeException("An error has occurred while attempting to write the configuration file for plugin '" + id + "'", e);
         }
     }
 
@@ -152,7 +164,7 @@ public final class LaunchBlackboard implements TransformerRegistry {
         if (!jsonConfig.has(name)) this.createDefaultConfigEntry(jsonConfig, transformer, data);
 
         final JsonObject configuration = jsonConfig.get(name).getAsJsonObject();
-        final JsonObject specialConfiguration = jsonConfig.get("configuration").getAsJsonObject();
+        final JsonObject specialConfiguration = configuration.get("configuration").getAsJsonObject();
 
         final TransformerConfiguration transformerConfiguration = transformer.provideConfiguration().get();
         final JsonObject defaultedSpecial = transformerConfiguration.getDefaultProvider().apply(specialConfiguration);
@@ -201,8 +213,7 @@ public final class LaunchBlackboard implements TransformerRegistry {
     }
 
     @Override
-    public boolean isTransformerEnabled(@Nonnull final String id, @Nonnull final String transformerName) {
-        final String registryName = id + ":" + transformerName;
+    public boolean isTransformerEnabled(@Nonnull final String registryName) {
         final JsonObject configObject = Preconditions.checkNotNull(this.configEntries.get(registryName));
         return configObject.get("enabled").getAsJsonPrimitive().getAsBoolean();
     }

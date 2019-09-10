@@ -22,6 +22,11 @@ public final class TransformerConfiguration {
         }
 
         @Nonnull
+        public static Builder create() {
+            return new Builder();
+        }
+
+        @Nonnull
         public Builder setSerializer(@Nonnull final Supplier<JsonObject> serializer) {
             this.serializer = Preconditions.checkNotNull(serializer);
             return this;
