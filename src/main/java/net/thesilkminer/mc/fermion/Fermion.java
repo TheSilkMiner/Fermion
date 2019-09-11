@@ -19,10 +19,13 @@ public final class Fermion {
 
     private static final Logger LOGGER = LogManager.getLogger("Fermion");
     private static final Marker MARKER = MarkerManager.getMarker("Mod Loading");
+    @SuppressWarnings("unused") // Used for transformation tests
+    private static final Marker TRANSFORMER_MARKER = MarkerManager.getMarker("TRANSFORMED MOD LOADING");
 
     public Fermion() {
         FMLJavaModLoadingContext.get().getModEventBus().register(this);
         MinecraftForge.EVENT_BUS.register(this);
+        LOGGER.info(MARKER, "Constructed");
     }
 
     @SubscribeEvent

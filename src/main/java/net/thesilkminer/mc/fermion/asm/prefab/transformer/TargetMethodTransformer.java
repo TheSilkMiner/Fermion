@@ -1,6 +1,7 @@
 package net.thesilkminer.mc.fermion.asm.prefab.transformer;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.MethodDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
@@ -29,20 +30,15 @@ public abstract class TargetMethodTransformer extends AbstractTransformer {
     private static final Logger LOGGER = LogManager.getLogger("TargetMethodTransformer");
 
     private final Marker marker;
-    private final Map<MethodDescriptor, BiFunction<MethodDescriptor, Pair<Integer, MethodVisitor>, MethodVisitor>> methodVisitors;
+    private final List<MethodDescriptor> targetMethods;
+
+    private Map<MethodDescriptor, BiFunction<MethodDescriptor, Pair<Integer, MethodVisitor>, MethodVisitor>> methodVisitors;
 
     public TargetMethodTransformer(@Nonnull final TransformerData data, @Nonnull final ClassDescriptor targetClass,
                                    @Nonnull final MethodDescriptor... targetMethods) {
         super(data, targetClass);
         Preconditions.checkArgument(Preconditions.checkNotNull(targetMethods).length > 0, "At least one method target must be given");
-        this.methodVisitors = this.getMethodVisitorCreators();
-        Arrays.stream(targetMethods)
-                .map(this.methodVisitors::get)
-                .filter(Objects::isNull)
-                .findAny()
-                .ifPresent(it -> {
-                    throw new IllegalStateException("Found target method descriptor " + it + " but no matching method visitor");
-                });
+        this.targetMethods = ImmutableList.copyOf(Arrays.asList(targetMethods));
         this.marker = MarkerManager.getMarker(this.getData().getName());
     }
 
@@ -52,6 +48,16 @@ public abstract class TargetMethodTransformer extends AbstractTransformer {
     @Nonnull
     @Override
     public final BiFunction<Integer, ClassVisitor, ClassVisitor> getClassVisitorCreator() {
+        if (this.methodVisitors == null) {
+            this.methodVisitors = this.getMethodVisitorCreators();
+            this.targetMethods.stream()
+                    .map(this.methodVisitors::get)
+                    .filter(Objects::isNull)
+                    .findAny()
+                    .ifPresent(it -> {
+                        throw new IllegalStateException("Found target method descriptor " + it + " but no matching method visitor");
+                    });
+        }
         return (v, cw) -> new ClassVisitor(v, cw) {
             @Override
             public MethodVisitor visitMethod(final int access, @Nonnull final String name, @Nonnull final String descriptor,
