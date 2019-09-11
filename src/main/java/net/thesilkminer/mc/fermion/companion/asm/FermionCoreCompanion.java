@@ -2,6 +2,7 @@ package net.thesilkminer.mc.fermion.companion.asm;
 
 import net.thesilkminer.mc.fermion.asm.api.PluginMetadata;
 import net.thesilkminer.mc.fermion.asm.prefab.AbstractLaunchPlugin;
+import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestHookingVanillaTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestSingleTargetMethodTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestTargetMethodTransformer;
 
@@ -28,7 +29,8 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
 
 
         /* Test transformers */
-        this.registerTransformer(new TestTargetMethodTransformer());
+        this.registerTransformer(new TestHookingVanillaTransformer());
         this.registerTransformer(new TestSingleTargetMethodTransformer());
+        this.registerTransformer(new TestTargetMethodTransformer());
     }
 }
