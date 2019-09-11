@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import cpw.mods.modlauncher.api.ITransformer;
 import cpw.mods.modlauncher.api.ITransformerVotingContext;
 import cpw.mods.modlauncher.api.TransformerVoteResult;
+import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.Transformer;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerRegistry;
 import net.thesilkminer.mc.fermion.asm.common.utility.EffectivelyFinalByteArray;
@@ -28,7 +29,7 @@ public final class FermionTransformer implements ITransformer<ClassNode> {
     private static final Log LOGGER = Log.of("Transformer");
 
     private final TransformerRegistry registry;
-    private final Map<String, List<Transformer>> classToTransformer;
+    private final Map<ClassDescriptor, List<Transformer>> classToTransformer;
     private final Map<Transformer, String> transformerToName;
 
     FermionTransformer(@Nonnull final LaunchBlackboard blackboard) {
@@ -50,14 +51,13 @@ public final class FermionTransformer implements ITransformer<ClassNode> {
     public ClassNode transform(@Nonnull final ClassNode input, @Nonnull final ITransformerVotingContext context) {
         LOGGER.d("Got 'em: " + input.name);
 
-        final String className = input.name.replace('/', '.');
+        final ClassDescriptor classDescriptor = ClassDescriptor.of(input.name);
 
         LOGGER.i("************************************************************************");
-        LOGGER.i("Attempting to transform class '" + className + "'");
+        LOGGER.i("Attempting to transform class '" + classDescriptor.getClassName() + "'");
 
-        final byte[] classData = this.toByteArray(input);
-        final EffectivelyFinalByteArray finalClassBytes = EffectivelyFinalByteArray.of(classData);
-        final List<Transformer> transformers = this.classToTransformer.get(className);
+        final EffectivelyFinalByteArray finalClassBytes = EffectivelyFinalByteArray.of(this.toByteArray(input));
+        final List<Transformer> transformers = this.classToTransformer.get(classDescriptor);
 
         if (transformers.size() != 0) {
             LOGGER.d("Injecting universal transformer 'fermion.asm.service:universal'");
@@ -102,7 +102,7 @@ public final class FermionTransformer implements ITransformer<ClassNode> {
             LOGGER.i("    Transformer '" + registryName + "' called successfully");
         });
 
-        LOGGER.i("Transformation run completed successfully for class '" + className + "'");
+        LOGGER.i("Transformation run completed successfully for class '" + classDescriptor.getClassName() + "'");
         LOGGER.i("************************************************************************");
 
         return this.fromByteArray(finalClassBytes.get());
@@ -132,6 +132,12 @@ public final class FermionTransformer implements ITransformer<ClassNode> {
     @Nonnull
     @Override
     public Set<Target> targets() {
-        return ImmutableSet.copyOf(this.classToTransformer.keySet().stream().map(Target::targetClass).collect(Collectors.toSet()));
+        return ImmutableSet.copyOf(
+                this.classToTransformer.keySet()
+                        .stream()
+                        .map(ClassDescriptor::getClassName)
+                        .map(Target::targetClass)
+                        .collect(Collectors.toSet())
+        );
     }
 }

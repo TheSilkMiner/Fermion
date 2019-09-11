@@ -2,8 +2,10 @@ package net.thesilkminer.mc.fermion.asm.common;
 
 import com.google.common.collect.ImmutableSet;
 import net.thesilkminer.mc.fermion.asm.api.configuration.TransformerConfiguration;
+import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.Transformer;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
+import net.thesilkminer.mc.fermion.asm.common.utility.Log;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
@@ -13,8 +15,9 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-class FermionUniversalTransformer implements Transformer {
+final class FermionUniversalTransformer implements Transformer {
     static final String TRANSFORMER_NAME = "fermion.asm.service:universal";
+    private static final Log L = Log.of(TRANSFORMER_NAME);
 
     @Nonnull
     @Override
@@ -28,8 +31,8 @@ class FermionUniversalTransformer implements Transformer {
 
     @Nonnull
     @Override
-    public Set<String> getClassesToTransform() {
-        return ImmutableSet.of("every.single.one");
+    public Set<ClassDescriptor> getClassesToTransform() {
+        return ImmutableSet.of();
     }
 
     @Nonnull
@@ -46,6 +49,8 @@ class FermionUniversalTransformer implements Transformer {
                     "_re_syst_patch_successful", "Z", null, null);
             fv.visitEnd();
             w.visitEnd();
+
+            L.i("Successfully injected field into class");
 
             return new ClassVisitor(v, w) {};
         };
