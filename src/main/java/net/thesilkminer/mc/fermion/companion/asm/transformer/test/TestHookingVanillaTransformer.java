@@ -13,7 +13,7 @@ import org.objectweb.asm.Opcodes;
 import javax.annotation.Nonnull;
 import java.util.function.BiFunction;
 
-public class TestHookingVanillaTransformer extends SingleTargetMethodTransformer {
+public final class TestHookingVanillaTransformer extends SingleTargetMethodTransformer {
 
     public TestHookingVanillaTransformer() {
         super(
@@ -36,7 +36,7 @@ public class TestHookingVanillaTransformer extends SingleTargetMethodTransformer
         return (v, mv) -> new MethodVisitor(v, mv) {
             @Override
             @SuppressWarnings("SpellCheckingInspection")
-            public void visitInsn(int opcode) {
+            public void visitInsn(final int opcode) {
                 if (opcode != Opcodes.RETURN) {
                     super.visitInsn(opcode);
                     return;

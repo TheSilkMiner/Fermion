@@ -39,7 +39,7 @@ public abstract class TargetMethodTransformer extends AbstractTransformer {
         super(data, targetClass);
         Preconditions.checkArgument(Preconditions.checkNotNull(targetMethods).length > 0, "At least one method target must be given");
         this.targetMethods = ImmutableList.copyOf(Arrays.asList(targetMethods));
-        this.marker = MarkerManager.getMarker(this.getData().getName());
+        this.marker = MarkerManager.getMarker(this.getData().getOwningPluginId() + ":" + this.getData().getName());
     }
 
     @Nonnull

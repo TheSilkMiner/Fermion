@@ -2,6 +2,7 @@ package net.thesilkminer.mc.fermion;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.StartupMessageManager;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -26,6 +27,7 @@ public final class Fermion {
         FMLJavaModLoadingContext.get().getModEventBus().register(this);
         MinecraftForge.EVENT_BUS.register(this);
         LOGGER.info(MARKER, "Constructed");
+        StartupMessageManager.addModMessage("Ahoy there! Fermion is here!");
     }
 
     @SubscribeEvent

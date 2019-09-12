@@ -44,15 +44,15 @@ final class FermionUniversalTransformer implements Transformer {
     @Nonnull
     @Override
     public BiFunction<Integer, ClassVisitor, ClassVisitor> getClassVisitorCreator() {
-        return (v, w) -> {
-            final FieldVisitor fv = w.visitField(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC,
-                    "_re_syst_patch_successful", "Z", null, null);
-            fv.visitEnd();
-            w.visitEnd();
-
-            L.i("Successfully injected field into class");
-
-            return new ClassVisitor(v, w) {};
+        return (v, w) -> new ClassVisitor(v, w) {
+            @Override
+            public void visitEnd() {
+                final FieldVisitor fv = super.visitField(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC,
+                        "_re_syst_patch_successful", "Z", null, null);
+                fv.visitEnd();
+                L.i("Successfully injected field into class");
+                super.visitEnd();
+            }
         };
     }
 }

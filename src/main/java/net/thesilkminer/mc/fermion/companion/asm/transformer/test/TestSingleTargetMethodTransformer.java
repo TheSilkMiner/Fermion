@@ -48,7 +48,7 @@ public final class TestSingleTargetMethodTransformer extends SingleTargetMethodT
             }
 
             @Override
-            public void visitMaxs(int maxStack, int maxLocals) {
+            public void visitMaxs(final int maxStack, final int maxLocals) {
                 super.visitMaxs(3, 2);
             }
         };
