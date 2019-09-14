@@ -58,7 +58,7 @@ public final class ModListTransformer extends AbstractTransformer {
                 super.visitFieldInsn(Opcodes.GETFIELD, "net/minecraftforge/fml/ModList", "fileById", "Ljava/util/Map;");
                 super.visitMethodInsn(Opcodes.INVOKESTATIC, "net/minecraftforge/fml/ModList", GENERATED_GET_DATA_LIST_METHOD_NAME,
                         "()Ljava/util/List;", false);
-                super.visitMethodInsn(Opcodes.INVOKESTATIC, "net/thesilkminer/mc/fermion/companion/asm/hook/ModListHook",
+                super.visitMethodInsn(Opcodes.INVOKESTATIC, "net/thesilkminer/mc/fermion/companion/hook/ModListHook",
                         "injectFermionLaunchPlugins", "(Ljava/util/List;Ljava/util/List;Ljava/util/Map;Ljava/util/List;)V", false);
                 final Label l0 = new Label();
                 super.visitLabel(l0);
@@ -89,7 +89,7 @@ public final class ModListTransformer extends AbstractTransformer {
             super.visitFieldInsn(Opcodes.GETFIELD, "net/minecraftforge/fml/ModList", "mods", "Ljava/util/List;");
             super.visitMethodInsn(Opcodes.INVOKESTATIC, "net/minecraftforge/fml/ModList", GENERATED_GET_DATA_LIST_METHOD_NAME,
                     "()Ljava/util/List;", false);
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, "net/thesilkminer/mc/fermion/companion/asm/hook/ModListHook",
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, "net/thesilkminer/mc/fermion/companion/hook/ModListHook",
                     "injectFermionContainersForSize", "(Ljava/util/List;Ljava/util/List;)I", false);
             super.visitInsn(Opcodes.IRETURN);
             final Label l1 = new Label();

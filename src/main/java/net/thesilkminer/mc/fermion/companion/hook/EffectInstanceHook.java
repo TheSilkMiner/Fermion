@@ -1,4 +1,4 @@
-package net.thesilkminer.mc.fermion.companion.asm.hook;
+package net.thesilkminer.mc.fermion.companion.hook;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

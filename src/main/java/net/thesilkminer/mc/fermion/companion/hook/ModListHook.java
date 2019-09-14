@@ -1,11 +1,10 @@
-package net.thesilkminer.mc.fermion.companion.asm.hook;
+package net.thesilkminer.mc.fermion.companion.hook;
 
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.javafmlmod.FMLModContainer;
 import net.minecraftforge.fml.loading.moddiscovery.ModFile;
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
 import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
