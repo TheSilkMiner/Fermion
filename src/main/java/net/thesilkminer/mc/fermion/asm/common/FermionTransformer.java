@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import cpw.mods.modlauncher.api.ITransformer;
 import cpw.mods.modlauncher.api.ITransformerVotingContext;
 import cpw.mods.modlauncher.api.TransformerVoteResult;
+import net.minecraftforge.fml.loading.FileUtils;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.Transformer;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerRegistry;
@@ -19,6 +20,11 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
 import javax.annotation.Nonnull;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,13 +35,17 @@ public final class FermionTransformer implements ITransformer<ClassNode> {
     private static final Log LOGGER = Log.of("Transformer");
 
     private final TransformerRegistry registry;
+    private final Map<String, Boolean> environmentConfiguration;
     private final Map<ClassDescriptor, List<Transformer>> classToTransformer;
     private final Map<Transformer, String> transformerToName;
+    private final Path dumpRoot;
 
-    FermionTransformer(@Nonnull final LaunchBlackboard blackboard) {
+    FermionTransformer(@Nonnull final LaunchBlackboard blackboard, @Nonnull final Map<String, Boolean> environmentConfig) {
         this.registry = blackboard;
+        this.environmentConfiguration = environmentConfig;
         this.classToTransformer = Maps.newHashMap();
         this.transformerToName = Maps.newHashMap();
+        this.dumpRoot = blackboard.getDumpDir();
 
         final Map<String, Transformer> transformers =  blackboard.getTransformers();
         transformers.forEach((k, v) -> this.transformerToName.put(v, k));
@@ -105,7 +115,11 @@ public final class FermionTransformer implements ITransformer<ClassNode> {
         LOGGER.i("Transformation run completed successfully for class '" + classDescriptor.getClassName() + "'");
         LOGGER.i("************************************************************************");
 
-        return this.fromByteArray(finalClassBytes.get());
+        final byte[] completelyTransformedClass = finalClassBytes.get();
+
+        if (this.environmentConfiguration.get("dump")) this.dumpClassToDisk(input.name, completelyTransformedClass);
+
+        return this.fromByteArray(completelyTransformedClass);
     }
 
     private byte[] toByteArray(@Nonnull final ClassNode node) {
@@ -122,6 +136,30 @@ public final class FermionTransformer implements ITransformer<ClassNode> {
         return node;
     }
 
+    @SuppressWarnings("MethodCanBeVariableArityMethod")
+    private void dumpClassToDisk(@Nonnull final String name, @Nonnull final byte[] classData) {
+        if (this.dumpRoot == null) throw new IllegalStateException("this.dumpRoot == null");
+        LOGGER.d("Dumping class data for " + name);
+
+        final Path dumpLocation = this.dumpRoot.resolve("./" + name + ".class").toAbsolutePath().normalize();
+        final Path parentDirectory = dumpLocation.resolve("./..").toAbsolutePath().normalize();
+        try {
+            FileUtils.getOrCreateDirectory(parentDirectory, parentDirectory.getFileName().toString());
+            if (Files.notExists(dumpLocation)) {
+                Files.createFile(dumpLocation);
+            }
+        } catch (final IOException e) {
+            LOGGER.e("Unable to create file to dump class " + name + " on disk.", e);
+        }
+
+        try (final BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dumpLocation.toFile()))) {
+            writer.write(classData);
+            LOGGER.d("Dumping completed");
+        } catch (final IOException e) {
+            LOGGER.e("Unable to dump class " + name + " to disk!", e);
+        }
+    }
+
     @Nonnull
     @Override
     public TransformerVoteResult castVote(@Nonnull final ITransformerVotingContext context) {
@@ -132,6 +170,15 @@ public final class FermionTransformer implements ITransformer<ClassNode> {
     @Nonnull
     @Override
     public Set<Target> targets() {
+        if (this.environmentConfiguration.get("emergency_mode")) {
+            LOGGER.w("*********************************************************");
+            LOGGER.w("*    FERMION IS CURRENTLY RUNNING IN EMERGENCY MODE!    *");
+            LOGGER.w("* IN THIS STATE NO TRANSFORMERS WILL BE LOADED AT ALL!  *");
+            LOGGER.w("*           DO NOT EXPECT YOUR CHANGES TO WORK          *");
+            LOGGER.w("*********************************************************");
+            return ImmutableSet.of();
+        }
+
         return ImmutableSet.copyOf(
                 this.classToTransformer.keySet()
                         .stream()

@@ -22,6 +22,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Reader;
@@ -39,6 +40,8 @@ public final class LaunchBlackboard implements TransformerRegistry {
     private final Map<String, Pair<PluginMetadata, LaunchPlugin>> pluginsMap;
     private final Map<String, Transformer> transformers;
     private final Map<String, JsonObject> configEntries;
+
+    private Path dumpDir;
 
     public LaunchBlackboard() {
         this.pluginsMap = Maps.newLinkedHashMap();
@@ -90,6 +93,10 @@ public final class LaunchBlackboard implements TransformerRegistry {
         LOGGER.i("Found Fermion LaunchPlugin with id '" + pluginId + "': performing registration");
         this.pluginsMap.put(pluginId, ImmutablePair.of(pluginMetadata, plugin));
         LOGGER.t("Plugin '" + pluginId + "' registered successfully");
+    }
+
+    public void acceptDumpDir(@Nonnull final Path root) {
+        this.dumpDir = root;
     }
 
     public void loadConfig(@Nonnull final Path root) {
@@ -194,6 +201,11 @@ public final class LaunchBlackboard implements TransformerRegistry {
     @Nonnull
     public Map<String, Transformer> getTransformers() {
         return ImmutableMap.copyOf(this.transformers);
+    }
+
+    @Nullable
+    public Path getDumpDir() {
+        return this.dumpDir;
     }
 
     @Override
