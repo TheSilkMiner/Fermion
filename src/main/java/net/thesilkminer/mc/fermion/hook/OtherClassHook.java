@@ -14,4 +14,13 @@ public final class OtherClassHook {
     public static int getId() {
         return -1;
     }
+
+    @Nonnull
+    public static String print(@Nonnull final OtherClass instance, @Nonnull final String marker) {
+        return "";
+    }
+
+    public static int getIdThroughMethod(@Nonnull final Object object) {
+        return -1;
+    }
 }

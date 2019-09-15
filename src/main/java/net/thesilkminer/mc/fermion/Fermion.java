@@ -46,18 +46,27 @@ public final class Fermion {
         @SuppressWarnings("SpellCheckingInspection")
         final String expectedParameter = "$ssuming $ is bills";
         final int expectedId = 3;
+        final String expectedPrinted = otherClass.getPrinted();
+        final int expectedIdThroughMethod = 3;
 
         // Let's check
         final String parameterOfOtherClass = OtherClassHook.getParameter(otherClass);
         final int idOfOtherClass = OtherClassHook.getId();
+        final String printedOfOtherClass = OtherClassHook.print(otherClass, "Assuming a is bills");
+        final int idOfOtherClassThroughMethod = OtherClassHook.getIdThroughMethod(new Object());
 
-        boolean allMatches = expectedParameter.equals(parameterOfOtherClass) && expectedId == idOfOtherClass;
+        boolean allMatches = expectedParameter.equals(parameterOfOtherClass)
+                && expectedId == idOfOtherClass
+                && expectedPrinted.equals(printedOfOtherClass)
+                && expectedIdThroughMethod == idOfOtherClassThroughMethod;
 
         if (allMatches) {
             LOGGER.info(CHECK_MARKER, "Successfully transformed OtherClassHook: it works");
         } else {
             LOGGER.warn(CHECK_MARKER, "Attempted to get parameter of otherClass: expected '" + expectedParameter + "'; found '" + parameterOfOtherClass + "'");
             LOGGER.warn(CHECK_MARKER, "Attempted to get ID of otherClass: expected " + expectedId + "; found " + idOfOtherClass);
+            LOGGER.warn(CHECK_MARKER, "Attempted to call 'print' of otherClass: expected '" + expectedPrinted + "'; found '" + printedOfOtherClass + "'");
+            LOGGER.warn(CHECK_MARKER, "Attempted to call 'getId' of otherClass: expected " + expectedIdThroughMethod + "; found " + idOfOtherClassThroughMethod);
             LOGGER.warn(CHECK_MARKER, "If you've disabled the transformer, that's okay. If you haven't, report the issue on our GitHub!");
         }
     }
