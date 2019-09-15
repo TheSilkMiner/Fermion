@@ -321,7 +321,7 @@ public abstract class RuntimeFieldAccessTransformer extends AbstractTransformer 
                             .findAny();
                 }
 
-                if (opt.isPresent()) newAccess = (access & ~Opcodes.ACC_PRIVATE) | Opcodes.ACC_PUBLIC;
+                if (opt.isPresent()) newAccess = ((access & ~Opcodes.ACC_PRIVATE) & ~Opcodes.ACC_PROTECTED) | Opcodes.ACC_PUBLIC;
 
                 if (newAccess != access) LOGGER.info(RuntimeFieldAccessTransformer.this.marker,
                         "Made field '" + fieldDescriptor.toString() + "' public (new access: " + newAccess + ")");
