@@ -8,6 +8,7 @@ import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerRegistry;
 import net.thesilkminer.mc.fermion.asm.prefab.AbstractLaunchPlugin;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.ModListTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.ModLoaderTransformer;
+import net.thesilkminer.mc.fermion.companion.asm.transformer.TransformingUtilitiesTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestHookingVanillaTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeFieldAccessTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeMethodAccessTransformer;
@@ -42,6 +43,7 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
         /* Actual transformers */
         this.registerTransformer(new ModLoaderTransformer());
         this.registerTransformer(new ModListTransformer());
+        this.registerTransformer(new TransformingUtilitiesTransformer());
 
         /* Vanity transformers */
         this.registerTransformer(new BackToSingleThreadsTransformer());
