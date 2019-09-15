@@ -9,7 +9,8 @@ import net.thesilkminer.mc.fermion.asm.prefab.AbstractLaunchPlugin;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.ModListTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.ModLoaderTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestHookingVanillaTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeFieldAccessTransformerTransformer;
+import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeFieldAccessTransformer;
+import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeMethodAccessTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestSingleTargetMethodTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestTargetMethodTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.vanity.BackToSingleThreadsTransformer;
@@ -50,7 +51,8 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
         this.registerTransformer(new TestHookingVanillaTransformer());
         this.registerTransformer(new TestSingleTargetMethodTransformer());
         this.registerTransformer(new TestTargetMethodTransformer());
-        this.registerTransformer(new TestRuntimeFieldAccessTransformerTransformer());
+        this.registerTransformer(new TestRuntimeFieldAccessTransformer());
+        this.registerTransformer(new TestRuntimeMethodAccessTransformer());
     }
 
     @Override

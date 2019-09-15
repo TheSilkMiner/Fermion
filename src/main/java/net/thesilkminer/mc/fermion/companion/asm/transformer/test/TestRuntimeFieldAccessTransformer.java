@@ -7,9 +7,9 @@ import net.thesilkminer.mc.fermion.asm.api.descriptor.MethodDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
 import net.thesilkminer.mc.fermion.asm.prefab.transformer.RuntimeFieldAccessTransformer;
 
-public final class TestRuntimeFieldAccessTransformerTransformer extends RuntimeFieldAccessTransformer {
+public final class TestRuntimeFieldAccessTransformer extends RuntimeFieldAccessTransformer {
 
-    public TestRuntimeFieldAccessTransformerTransformer() {
+    public TestRuntimeFieldAccessTransformer() {
         super(
                 TransformerData.Builder.create()
                         .setOwningPluginId("fermion.asm")
