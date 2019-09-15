@@ -47,7 +47,7 @@ final class FermionUniversalTransformer implements Transformer {
         return (v, w) -> new ClassVisitor(v, w) {
             @Override
             public void visitEnd() {
-                final FieldVisitor fv = super.visitField(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC,
+                final FieldVisitor fv = super.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_SYNTHETIC,
                         "_re_syst_patch_successful", "Z", null, null);
                 fv.visitEnd();
                 L.i("Successfully injected field into class");
