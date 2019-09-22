@@ -15,11 +15,47 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
+/**
+ * This class provides a skeletal implementation of the {@link Transformer}
+ * interface to minimize the efforts needed.
+ *
+ * <p>To create a transformer, the user should just extend this class and
+ * implement the {@link #getClassVisitorCreator()} method. Also, the
+ * {@link TransformerData} instance and the class targets should be passed
+ * in through the constructor.</p>
+ *
+ * <p>To ensure safety in usage of this transformer implementation, most of
+ * the methods have been marked final, i.e. non-virtual and non extendable. All
+ * the other methods that were either added or left to the user to implement
+ * have documentation that describes their implementation in the respective
+ * section. Added methods are instead simply documented.</p>
+ *
+ * <p>It is highly suggested for clients of this library to extend this class
+ * instead of directly implementing {@code Transformer}. It is nevertheless not
+ * a hard requirement and implementations must not special case this type of
+ * transformers or assume that all transformers that get registered extend this
+ * class.</p>
+ *
+ * @since 1.0.0
+ */
 public abstract class AbstractTransformer implements Transformer {
 
     private final TransformerData data;
     private final Set<ClassDescriptor> targets;
 
+    /**
+     * Constructs a new instance of this abstract transformer.
+     *
+     * @param data
+     *      The data that identifies this transformer. It must be complete in
+     *      all its parts. Refer to {@link TransformerData} for more
+     *      information. It cannot be null.
+     * @param targets
+     *      The {@link ClassDescriptor}s representing the targets that this
+     *      transformer aims to transform. There must be at least one.
+     *
+     * @since 1.0.0
+     */
     protected AbstractTransformer(@Nonnull final TransformerData data, @Nonnull final ClassDescriptor... targets) {
         this.data = Preconditions.checkNotNull(data);
         Preconditions.checkArgument(Preconditions.checkNotNull(targets).length > 0, "At least one target must be given");
@@ -38,6 +74,17 @@ public abstract class AbstractTransformer implements Transformer {
         return ImmutableSet.copyOf(this.targets);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @implSpec
+     *      This implementation provides by default a new empty
+     *      {@link TransformerConfiguration} every time it is called. This
+     *      defines a transformer which provides no special configuration other
+     *      than enabling or disabling.
+     *
+     * @since 1.0.0
+     */
     @Nonnull
     @Override
     public Supplier<TransformerConfiguration> provideConfiguration() {

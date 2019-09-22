@@ -26,10 +26,49 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+/**
+ * Transformer that automatically makes the access of the given field public
+ * and allows external code to access it through a given method (called
+ * "accessor method").
+ *
+ * <p>In other words, this is a sort of Access Transformer that is implemented
+ * using raw bytecode manipulation inside of a Fermion environment rather than
+ * using environment-dependent solutions (such as Forge's {@code xxx_at.cfg}
+ * file.</p>
+ *
+ * <p>To ensure safety in this implementation, most of the methods that need
+ * to be untouched have been made non-virtual and non-overridable (i.e.
+ * final). All the added methods, that represent this transformer's public
+ * API are documented in depth.</p>
+ *
+ * @since 1.0.0
+ */
 public abstract class RuntimeFieldAccessTransformer extends AbstractTransformer {
 
+    /**
+     * Describes one of the target fields of the
+     * {@link RuntimeFieldAccessTransformer}.
+     *
+     * <p>This descriptor stores the field that should be made public, along
+     * with the class where the field is located, and the "accessor" method,
+     * along with the class where it is located.</p>
+     *
+     * <p>Note that instances of this class do not cause class loading neither
+     * during normal usage or construction, if used properly.</p>
+     *
+     * @since 1.0.0
+     */
     protected static final class TargetDescriptor {
 
+        /**
+         * A builder used to create instances of a {@link TargetDescriptor}.
+         *
+         * <p>Builder instances can be reused, as in their {@link #build()}
+         * method can be called multiple times to build multiple target
+         * descriptors.</p>
+         *
+         * @since 1.0.0
+         */
         public static final class Builder {
 
             private ClassDescriptor fieldClass;
@@ -39,6 +78,19 @@ public abstract class RuntimeFieldAccessTransformer extends AbstractTransformer 
 
             private Builder() {}
 
+            /**
+             * Creates a new builder instance to construct an instance of a
+             * {@link TargetDescriptor}.
+             *
+             * <p>No properties are populated with default values. Rather, they
+             * all require explicit initialization before calling
+             * {@link #build()}.</p>
+             *
+             * @return
+             *      A new, ready to be used, builder instance.
+             *
+             * @since 1.0.0
+             */
             @Nonnull
             public static Builder create() {
                 return new Builder();
@@ -64,6 +116,33 @@ public abstract class RuntimeFieldAccessTransformer extends AbstractTransformer 
                 return this.accessor;
             }
 
+            /**
+             * Sets the field that acts as a target for this target descriptor.
+             *
+             * <p>The "target field" is defined as the field that the AT that
+             * has the descriptor as a target will attempt to look up and make
+             * public, stripping all the access modifiers that may or may not
+             * already be present.</p>
+             *
+             * @param fieldClass
+             *      The class where the "target field" is located. It cannot be
+             *      null.
+             * @param field
+             *      The "target field". It cannot be null.
+             * @return
+             *      This builder for chaining.
+             * @throws IllegalStateException
+             *      If the "target field" has already been set.
+             *
+             * @implNote
+             *      The implementation <strong>must</strong> require that the
+             *      object remains in a correct state if one of the arguments
+             *      is null. For this reason, it is illegal for a field to be
+             *      set prior to having checked both of the arguments of this
+             *      method for nullability issues.
+             *
+             * @since 1.0.0
+             */
             @Nonnull
             public Builder setTargetField(@Nonnull final ClassDescriptor fieldClass, @Nonnull final FieldDescriptor field) {
                 if (this.fieldClass != null || this.field != null) {
@@ -75,6 +154,68 @@ public abstract class RuntimeFieldAccessTransformer extends AbstractTransformer 
                 return this;
             }
 
+            /**
+             * Sets the method that acts as an accessor for the "target field"
+             * of this target descriptor.
+             *
+             * <p>For a definition of "target field", refer to the
+             * documentation of
+             * {@link #setTargetField(ClassDescriptor, FieldDescriptor)}.</p>
+             *
+             * <p>The "accessor method" is defined as that method whose body
+             * gets overwritten and acts as a bridge between clients of the
+             * "target field" and the "target field" itself. This is needed
+             * because the transformation occurs at runtime and so it is needed
+             * that the code compiles.</p>
+             *
+             * <p>The "accessor method" needs to respect certain parameters to
+             * be considered a valid "accessor method". These parameters are
+             * outlines in the paragraphs that follow.</p>
+             *
+             * <p>First of all, it is mandatory for an "accessor method" to
+             * have the same exact return type of the "target field".
+             * Subclasses or superclasses are not allowed, so it is not
+             * possible, e.g., to target a field of type {@code List} and
+             * reference it in the "accessor method" as a {@code Collection}
+             * type.</p>
+             *
+             * <p>If the "target field" is static, the "accessor method" must
+             * have an empty parameter list (also known as, it cannot have
+             * parameters). The receiver parameter is allowed, but only if the
+             * "accessor" method is non-static. Its presence must anyway not
+             * be specified in its descriptor.</p>
+             *
+             * <p>If the "target field" is non-static, the "accessor method"
+             * must have exactly one parameter, excluding the receiver
+             * parameter if present. The receiver parameter must anyway not be
+             * specified in the "accessor method" descriptor. The type of the
+             * "actual parameter" (i.e. the parameter that is not the receiver
+             * parameter) must match exactly the "target field"'s class. It
+             * cannot be neither a superclass nor a subclass, otherwise an
+             * error occurs. E.g., it is illegal to try to access a non-static
+             * field of the class {@code AbstractList} and declare the
+             * "actual parameter" of the "accessor method" as a
+             * {@code ArrayList}.</p>
+             *
+             * @param accessorClass
+             *      The class where the "accessor method" is located. It cannot
+             *      be null.
+             * @param accessor
+             *      The "accessor method". It cannot be null.
+             * @return
+             *      This builder for chaining.
+             * @throws IllegalStateException
+             *      If the "accessor method" has already been set.
+             *
+             * @implNote
+             *      The implementation <strong>must</strong> require that the
+             *      object remains in a correct state if one of the arguments
+             *      is null. For this reason, it is illegal for a field to be
+             *      set prior to having checked both of the arguments of this
+             *      method for nullability issues.
+             *
+             * @since 1.0.0
+             */
             @Nonnull
             public Builder setAccessorMethod(@Nonnull final ClassDescriptor accessorClass, @Nonnull final MethodDescriptor accessor) {
                 if (this.accessorClass != null || this.accessor != null) {
@@ -86,6 +227,24 @@ public abstract class RuntimeFieldAccessTransformer extends AbstractTransformer 
                 return this;
             }
 
+            /**
+             * Builds a new instance of {@link TargetDescriptor} with the
+             * provided data.
+             *
+             * @return
+             *      A new instance of {@link TargetDescriptor}. Guaranteed not
+             *      to be null.
+             * @throws NullPointerException
+             *      If one or more of the required properties hasn't been set
+             *      previously.
+             * @throws IllegalArgumentException
+             *      If the "accessor method" does not respect the correct
+             *      structure. Refer to
+             *      {@link #setAccessorMethod(ClassDescriptor, MethodDescriptor)}
+             *      for more information.
+             *
+             * @since 1.0.0
+             */
             @Nonnull
             public TargetDescriptor build() {
                 Preconditions.checkNotNull(this.accessor, "Accessor method cannot be null");
@@ -242,6 +401,19 @@ public abstract class RuntimeFieldAccessTransformer extends AbstractTransformer 
     private final Marker marker;
     private final Set<TargetDescriptor> descriptors;
 
+    /**
+     * Constructs a new instance of this transformer.
+     *
+     * @param data
+     *      The data that identifies this transformer. Refer to
+     *      {@link TransformerData} for more information. It cannot be null.
+     * @param descriptors
+     *      A list of {@link TargetDescriptor}s that identifies the couples of
+     *      "target field" and "accessor method" that this transformer should
+     *      target. There must be at least one target descriptor.
+     *
+     * @since 1.0.0
+     */
     public RuntimeFieldAccessTransformer(@Nonnull final TransformerData data, @Nonnull final TargetDescriptor... descriptors) {
         super(data, getClassesFromTargets(descriptors));
         this.descriptors = ImmutableSet.copyOf(new HashSet<>(Arrays.asList(descriptors)));

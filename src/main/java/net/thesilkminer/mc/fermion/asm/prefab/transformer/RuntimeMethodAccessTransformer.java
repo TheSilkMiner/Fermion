@@ -25,10 +25,49 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+/**
+ * Transformer that automatically makes the access of the given method public
+ * and allows external code to access it through a given method (called
+ * "accessor method").
+ *
+ * <p>In other words, this is a sort of Access Transformer that is implemented
+ * using raw bytecode manipulation inside of a Fermion environment rather than
+ * using environment-dependent solutions (such as Forge's {@code xxx_at.cfg}
+ * file.</p>
+ *
+ * <p>To ensure safety in this implementation, most of the methods that need
+ * to be untouched have been made non-virtual and non-overridable (i.e.
+ * final). All the added methods, that represent this transformer's public
+ * API are documented in depth.</p>
+ *
+ * @since 1.0.0
+ */
 public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer {
 
+    /**
+     * Describes one of the target fields of the
+     * {@link RuntimeMethodAccessTransformer}.
+     *
+     * <p>This descriptor stores the method that should be made public, along
+     * with the class where the method is located, and the "accessor" method,
+     * along with the class where it is located.</p>
+     *
+     * <p>Note that instances of this class do not cause class loading neither
+     * during normal usage or construction, if used properly.</p>
+     *
+     * @since 1.0.0
+     */
     protected static final class TargetDescriptor {
 
+        /**
+         * A builder used to create instances of a {@link TargetDescriptor}.
+         *
+         * <p>Builder instances can be reused, as in their {@link #build()}
+         * method can be called multiple times to build multiple target
+         * descriptors.</p>
+         *
+         * @since 1.0.0
+         */
         public static final class Builder {
 
             private ClassDescriptor methodClass;
@@ -40,6 +79,19 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
             private Builder() {
             }
 
+            /**
+             * Creates a new builder instance to construct an instance of a
+             * {@link TargetDescriptor}.
+             *
+             * <p>No properties are populated with default values. Rather, they
+             * all require explicit initialization before calling
+             * {@link #build()}.</p>
+             *
+             * @return
+             *      A new, ready to be used, builder instance.
+             *
+             * @since 1.0.0
+             */
             @Nonnull
             public static Builder create() {
                 return new Builder();
@@ -69,6 +121,36 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
                 return this.accessor;
             }
 
+            /**
+             * Sets the method that acts as a target for this target
+             * descriptor.
+             *
+             * <p>The "target method" is defined as the method that the AT that
+             * has the descriptor as a target will attempt to look up and make
+             * public, stripping all the access modifiers that may or may not
+             * already be present.</p>
+             *
+             * @param methodClass
+             *      The class where the "target method" is located. It cannot
+             *      be null.
+             * @param method
+             *      The "target method". It cannot be null.
+             * @param isStatic
+             *      Whether the "target method" is static or not.
+             * @return
+             *      This builder for chaining.
+             * @throws IllegalStateException
+             *      If the "target method" has already been set.
+             *
+             * @implNote
+             *      The implementation <strong>must</strong> require that the
+             *      object remains in a correct state if one of the arguments
+             *      is null. For this reason, it is illegal for a field to be
+             *      set prior to having checked both of the arguments of this
+             *      method for nullability issues.
+             *
+             * @since 1.0.0
+             */
             @Nonnull
             public Builder setTargetMethod(@Nonnull final ClassDescriptor methodClass, @Nonnull final MethodDescriptor method, final boolean isStatic) {
                 if (this.methodClass != null || this.method != null) {
@@ -81,11 +163,119 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
                 return this;
             }
 
+            /**
+             * Sets the non-static method that acts as a target for this target
+             * descriptor.
+             *
+             * <p>The "target method" is defined as the method that the AT that
+             * has the descriptor as a target will attempt to look up and make
+             * public, stripping all the access modifiers that may or may not
+             * already be present.</p>
+             *
+             * <p>By using this method, it is assumed that the "target method"
+             * is non-static. In case this assumption is wrong, you should use
+             * the
+             * {@link #setTargetMethod(ClassDescriptor, MethodDescriptor, boolean)}
+             * instead.</p>
+             *
+             * @param methodClass
+             *      The class where the "target method" is located. It cannot
+             *      be null.
+             * @param method
+             *      The "target method". It cannot be null.
+             * @return
+             *      This builder for chaining.
+             * @throws IllegalStateException
+             *      If the "target method" has already been set.
+             *
+             * @implNote
+             *      The implementation <strong>must</strong> require that the
+             *      object remains in a correct state if one of the arguments
+             *      is null. For this reason, it is illegal for a field to be
+             *      set prior to having checked both of the arguments of this
+             *      method for nullability issues.
+             *
+             * @since 1.0.0
+             */
             @Nonnull
             public Builder setTargetMethod(@Nonnull final ClassDescriptor methodClass, @Nonnull final MethodDescriptor method) {
                 return this.setTargetMethod(methodClass, method, false);
             }
 
+            /**
+             * Sets the method that acts as an accessor for the "target method"
+             * of this target descriptor.
+             *
+             * <p>For a definition of "target method", refer to the
+             * documentation of
+             * {@link #setTargetMethod(ClassDescriptor, MethodDescriptor, boolean)}.</p>
+             *
+             * <p>The "accessor method" is defined as that method whose body
+             * gets overwritten and acts as a bridge between clients of the
+             * "target method" and the "target method" itself. This is needed
+             * because the transformation occurs at runtime and so it is needed
+             * that the code compiles.</p>
+             *
+             * <p>The "accessor method" needs to respect certain parameters to
+             * be considered a valid "accessor method". These parameters are
+             * outlines in the paragraphs that follow.</p>
+             *
+             * <p>First of all, it is mandatory for an "accessor method" to
+             * have the same exact return type of the "target method".
+             * Subclasses or superclasses are not allowed. E.g., it is
+             * illegal to target a method with return type {@code List} and
+             * have as the return type in the "accessor method"
+             * {@code Collection}.</p>
+             *
+             * <p>If the "target method" is static, the "accessor method" must
+             * have the same amount of parameters, excluding receiver types if
+             * present, as the "target method". The parameter types must also
+             * match one-to-one with the types of the "target method". More
+             * formally, the {@code i}-th parameter of the "accessor method",
+             * with {@code i} being between {@code 0} and {@code n} (where
+             * {@code n} is the amount of parameters of the "target method"),
+             * must have the same type as the {@code i}-th parameter of the
+             * "target method".</p>
+             *
+             * <p>If the "target method" is non-static, the "accessor method"
+             * must have one more parameter than the "target method", excluding
+             * receiver types if present. The parameter types of the "accessor
+             * method" must also match with the parameter types of the "target
+             * method" in the following manner. Assume {@code n} is the amount
+             * of parameters of the "target method" and {@code m} is the amount
+             * of parameters of the "accessor method". Then for every {@code i}
+             * between {@code 0} and {@code n}, there must be a {@code j}
+             * between {@code 1} and {@code m} that points to a parameter that
+             * has the same type as the one pointed by {@code i}. Moreover, the
+             * value of {@code j} must exactly match {@code i + 1}, otherwise
+             * an error occurs. Last but not least, the first parameter of the
+             * "accessor method" must be of the same type of the class that
+             * holds the "target method", excluding any possible receiver
+             * parameters. It cannot be neither a superclass nor a subclass,
+             * otherwise an error occurs. E.g., it is illegal to try to access
+             * a non-static method of the class {@code AbstractList} and
+             * declare the first parameter of the "accessor method" as an
+             * {@code ArrayList}.</p>
+             *
+             * @param accessorClass
+             *      The class where the "accessor method" is located. It cannot
+             *      be null.
+             * @param accessor
+             *      The "accessor method". It cannot be null.
+             * @return
+             *      This builder for chaining.
+             * @throws IllegalStateException
+             *      If the "accessor method" has already been set.
+             *
+             * @implNote
+             *      The implementation <strong>must</strong> require that the
+             *      object remains in a correct state if one of the arguments
+             *      is null. For this reason, it is illegal for a field to be
+             *      set prior to having checked both of the arguments of this
+             *      method for nullability issues.
+             *
+             * @since 1.0.0
+             */
             @Nonnull
             public Builder setAccessorMethod(@Nonnull final ClassDescriptor accessorClass, @Nonnull final MethodDescriptor accessor) {
                 if (this.accessorClass != null || this.accessor != null) {
@@ -97,6 +287,25 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
                 return this;
             }
 
+            /**
+             * Builds a new instance of {@link TargetDescriptor} with the
+             * provided data.
+             *
+             * @return
+             *      A new instance of {@link TargetDescriptor}. Guaranteed not
+             *      to be null.
+             * @throws NullPointerException
+             *      If one or more of the required properties hasn't been set
+             *      previously.
+             * @throws IllegalArgumentException
+             *      If either the "accessor method" does not respect the
+             *      correct structure or it is the same as the "target method".
+             *      Refer to
+             *      {@link #setAccessorMethod(ClassDescriptor, MethodDescriptor)}
+             *      for more information.
+             *
+             * @since 1.0.0
+             */
             @Nonnull
             public TargetDescriptor build() {
                 Preconditions.checkNotNull(this.accessor, "Accessor method cannot be null");
@@ -297,6 +506,19 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
     private final Marker marker;
     private final Set<TargetDescriptor> descriptors;
 
+    /**
+     * Constructs a new instance of this transformer.
+     *
+     * @param data
+     *      The data that identifies this transformer. Refer to
+     *      {@link TransformerData} for more information. It cannot be null.
+     * @param descriptors
+     *      A list of {@link TargetDescriptor}s that identifies the couples of
+     *      "target method" and "accessor method" that this transformer should
+     *      target. There must be at least one target descriptor.
+     *
+     * @since 1.0.0
+     */
     public RuntimeMethodAccessTransformer(@Nonnull final TransformerData data, @Nonnull final TargetDescriptor... descriptors) {
         super(data, getClassesFromTargets(descriptors));
         this.descriptors = ImmutableSet.copyOf(new HashSet<>(Arrays.asList(descriptors)));

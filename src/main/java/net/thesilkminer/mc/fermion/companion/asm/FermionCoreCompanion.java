@@ -77,7 +77,6 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
                             .setName("Fermion ASM Service")
                             .setDescription("This is where the magic happens")
                             .setCredits("cpw for creating ModLauncher, sp614x for Optifine and its Transformer idea")
-                            .addAuthor("TheSilkMiner (aka Silk)")
                             .addAuthor("RE/SYST")
                             .setDisplayUrl("https://thesilkminer.net/mc-mods/fermion")
                             .setVersion("1.0.0")
