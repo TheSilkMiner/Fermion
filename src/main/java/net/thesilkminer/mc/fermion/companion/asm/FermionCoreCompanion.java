@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import net.thesilkminer.mc.fermion.asm.api.Environment;
 import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
 import net.thesilkminer.mc.fermion.asm.api.PluginMetadata;
+import net.thesilkminer.mc.fermion.asm.api.transformer.Transformer;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerRegistry;
 import net.thesilkminer.mc.fermion.asm.prefab.AbstractLaunchPlugin;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.ModListTransformer;
@@ -14,6 +15,7 @@ import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeFie
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeMethodAccessTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestSingleTargetMethodTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestTargetMethodTransformer;
+import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestTransformerAlwaysDisabled;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.vanity.BackToSingleThreadsTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.vanity.StartupMessagesColorizerTransformer;
 import org.apache.commons.lang3.tuple.Pair;
@@ -55,6 +57,7 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
         this.registerTransformer(new TestTargetMethodTransformer());
         this.registerTransformer(new TestRuntimeFieldAccessTransformer());
         this.registerTransformer(new TestRuntimeMethodAccessTransformer());
+        this.registerTransformer(new TestTransformerAlwaysDisabled(this));
     }
 
     @Override
@@ -71,6 +74,12 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
             final Map<String, Pair<PluginMetadata, LaunchPlugin>> transformerMap =
                     (Map<String, Pair<PluginMetadata, LaunchPlugin>>) pluginsMap.get(registry);
 
+            final Field transformers = launchBlackboardClass.getDeclaredField("transformers");
+            transformers.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            final Map<String, Transformer> transformersMap =
+                    (Map<String, Transformer>) transformers.get(registry);
+
             final List<PluginMetadata> dataList = Lists.newArrayList();
             dataList.add(
                     PluginMetadata.Builder.create("fermion.asm.service")
@@ -85,6 +94,8 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
             transformerMap.values().stream().map(Pair::getKey).forEach(dataList::add);
 
             ModListTransformer.pluginMetadataList = dataList;
+            ModListTransformer.transformers = Lists.newArrayList(transformersMap.keySet());
+            ModListTransformer.registry = registry;
         } catch (@Nonnull final ReflectiveOperationException e) {
             e.printStackTrace(System.err);
         }

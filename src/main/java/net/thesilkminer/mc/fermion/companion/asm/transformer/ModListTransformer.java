@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import net.thesilkminer.mc.fermion.asm.api.PluginMetadata;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
+import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerRegistry;
 import net.thesilkminer.mc.fermion.asm.prefab.AbstractTransformer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +19,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 public final class ModListTransformer extends AbstractTransformer {
 
@@ -116,6 +118,8 @@ public final class ModListTransformer extends AbstractTransformer {
     private static final String GENERATED_GET_DATA_LIST_METHOD_NAME = "fermion$$injected$$getDataList$$generated$$00_1_01_144";
 
     public static List<PluginMetadata> pluginMetadataList = Lists.newArrayList();
+    public static List<String> transformers = Lists.newArrayList();
+    public static TransformerRegistry registry = null;
 
     public ModListTransformer() {
         super(
@@ -209,11 +213,15 @@ public final class ModListTransformer extends AbstractTransformer {
                 mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "net/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder",
                         "setName", "(Ljava/lang/String;)Lnet/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder;", false);
 
-                if (metadata.getDescription() != null) {
-                    mv.visitLdcInsn(metadata.getDescription());
-                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "net/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder",
+                final StringBuilder descBuilder = new StringBuilder();
+                if (metadata.getDescription() != null) descBuilder.append(metadata.getDescription());
+                this.appendTransformersForMetadata(metadata, descBuilder);
+
+                LOGGER.debug(MARKER, "Successfully built advanced description '" + descBuilder + "'");
+
+                mv.visitLdcInsn(descBuilder.toString());
+                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "net/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder",
                             "setDescription", "(Ljava/lang/String;)Lnet/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder;", false);
-                }
 
                 if (metadata.getCredits() != null) {
                     mv.visitLdcInsn(metadata.getCredits());
@@ -244,6 +252,36 @@ public final class ModListTransformer extends AbstractTransformer {
                 mv.visitInsn(Opcodes.POP);
 
                 LOGGER.debug(MARKER, "Entry generated successfully");
+            }
+
+            private void appendTransformersForMetadata(@Nonnull final PluginMetadata metadata, @Nonnull final StringBuilder builder) {
+                final List<String> pluginTransformers = transformers.stream()
+                        .filter(it -> it.startsWith(metadata.getId() + ":"))
+                        .collect(Collectors.toList());
+                final List<String> enabled = pluginTransformers.stream()
+                        .filter(it -> registry.isTransformerEnabled(it))
+                        .collect(Collectors.toList());
+                final List<String> disabled = pluginTransformers.stream()
+                        .filter(it -> !enabled.contains(it))
+                        .collect(Collectors.toList());
+
+                if (!enabled.isEmpty()) {
+                    builder.append("\n\n\nEnabled transformers:\n");
+                    enabled.forEach(it -> {
+                        builder.append("- ");
+                        builder.append(it);
+                        builder.append('\n');
+                    });
+                }
+
+                if (!disabled.isEmpty()) {
+                    builder.append("\n\n\nDisabled transformers:\n");
+                    disabled.forEach(it -> {
+                        builder.append("- ");
+                        builder.append(it);
+                        builder.append('\n');
+                    });
+                }
             }
         };
     }
