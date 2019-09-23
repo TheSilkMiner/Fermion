@@ -1,7 +1,7 @@
 package net.thesilkminer.mc.fermion.companion;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.moddiscovery.CoreModFile;
 import net.minecraftforge.fml.loading.moddiscovery.ModFile;
 import net.minecraftforge.forgespi.language.IModFileInfo;
@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,16 +49,7 @@ public final class LaunchPluginFile extends ModFile {
         @Override
         public Path findPath(@Nonnull final IModFile modFile, @Nonnull final String... path) {
             if (path.length == 1 && Objects.equals(path[0], "pack.mcmeta")) {
-                URI jarFileURI;
-                try {
-                    jarFileURI = Preconditions.checkNotNull(this.getClass().getClassLoader().getResource("dummy.mcmeta")).toURI();
-                    if (Objects.equals(jarFileURI.getScheme(), "jar")) {
-                        FileSystems.newFileSystem(jarFileURI, new HashMap<>());
-                    }
-                } catch (IOException | URISyntaxException var6) {
-                    throw new RuntimeException(var6);
-                }
-                return Paths.get(jarFileURI);
+                return FMLLoader.getLoadingModList().getModFileById("fermion").getFile().findResource("dummy.mcmeta");
             } else {
                 return Paths.get(path[0], path);
             }

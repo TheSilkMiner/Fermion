@@ -2,6 +2,7 @@ package net.thesilkminer.mc.fermion.asm.common;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -13,32 +14,39 @@ import cpw.mods.modlauncher.api.ITransformationService;
 import cpw.mods.modlauncher.api.ITransformer;
 import cpw.mods.modlauncher.api.IncompatibleEnvironmentException;
 import net.minecraftforge.fml.loading.FileUtils;
-import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
 import net.thesilkminer.mc.fermion.asm.common.utility.LaunchBlackboard;
+import net.thesilkminer.mc.fermion.asm.common.utility.LaunchPluginDiscoverer;
 import net.thesilkminer.mc.fermion.asm.common.utility.Log;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
 
 public final class FermionTransformationService implements ITransformationService {
 
     private static final Log LOGGER = Log.of("Transformation Service");
 
+    private final LaunchPluginDiscoverer discoverer;
     private final LaunchBlackboard blackboard;
     private final Map<String, Boolean> environmentConfiguration;
 
     public FermionTransformationService() {
+        this.discoverer = LaunchPluginDiscoverer.create();
         this.blackboard = new LaunchBlackboard();
         this.environmentConfiguration = Maps.newHashMap();
     }
@@ -76,8 +84,7 @@ public final class FermionTransformationService implements ITransformationServic
     public final void onLoad(@Nonnull final IEnvironment env, @Nonnull final Set<String> otherServices) throws IncompatibleEnvironmentException {
         LOGGER.i("Fermion Transformer Service is being loaded");
         LOGGER.i("Attempting to discover Fermion Launch Plugins");
-        final ServiceLoader<LaunchPlugin> launchPluginLoader = ServiceLoader.load(LaunchPlugin.class);
-        this.blackboard.accept(launchPluginLoader, env);
+        this.blackboard.accept(this.discoverer.discover(), env);
         LOGGER.i("Fermion Launch Plugins discovery completed");
     }
 

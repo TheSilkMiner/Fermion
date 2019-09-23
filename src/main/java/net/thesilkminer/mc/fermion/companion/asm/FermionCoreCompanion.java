@@ -1,5 +1,6 @@
 package net.thesilkminer.mc.fermion.companion.asm;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import net.thesilkminer.mc.fermion.asm.api.Environment;
 import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
@@ -24,12 +25,19 @@ import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class FermionCoreCompanion extends AbstractLaunchPlugin {
 
     public FermionCoreCompanion() {
         super("fermion.asm");
         this.registerTransformers();
+    }
+
+    @Nonnull
+    @Override
+    public Set<String> getRootPackages() {
+        return ImmutableSet.of("net.thesilkminer.mc.fermion");
     }
 
     @Override
