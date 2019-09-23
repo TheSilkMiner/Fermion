@@ -67,8 +67,8 @@ public abstract class TargetMethodTransformer extends AbstractTransformer {
      *
      * @since 1.0.0
      */
-    public TargetMethodTransformer(@Nonnull final TransformerData data, @Nonnull final ClassDescriptor targetClass,
-                                   @Nonnull final MethodDescriptor... targetMethods) {
+    protected TargetMethodTransformer(@Nonnull final TransformerData data, @Nonnull final ClassDescriptor targetClass,
+                                      @Nonnull final MethodDescriptor... targetMethods) {
         super(data, targetClass);
         Preconditions.checkArgument(Preconditions.checkNotNull(targetMethods).length > 0, "At least one method target must be given");
         this.targetMethods = ImmutableList.copyOf(Arrays.asList(targetMethods));

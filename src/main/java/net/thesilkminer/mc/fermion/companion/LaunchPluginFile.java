@@ -6,23 +6,18 @@ import net.minecraftforge.fml.loading.moddiscovery.CoreModFile;
 import net.minecraftforge.fml.loading.moddiscovery.ModFile;
 import net.minecraftforge.forgespi.language.IModFileInfo;
 import net.minecraftforge.forgespi.language.IModInfo;
-import net.minecraftforge.forgespi.language.IModLanguageProvider;
 import net.minecraftforge.forgespi.language.ModFileScanData;
 import net.minecraftforge.forgespi.locating.IModFile;
 import net.minecraftforge.forgespi.locating.IModLocator;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.jar.Manifest;
 
 public final class LaunchPluginFile extends ModFile {
@@ -94,41 +89,6 @@ public final class LaunchPluginFile extends ModFile {
     }
 
     @Override
-    public void setFileProperties(Map<String, Object> fileProperties) {
-        super.setFileProperties(fileProperties);
-    }
-
-    @Override
-    public IModLanguageProvider getLoader() {
-        return super.getLoader();
-    }
-
-    @Override
-    public Path findResource(String className) {
-        return super.findResource(className);
-    }
-
-    @Override
-    public void identifyLanguage() {
-        super.identifyLanguage();
-    }
-
-    @Override
-    public Supplier<Map<String, Object>> getSubstitutionMap() {
-        return super.getSubstitutionMap();
-    }
-
-    @Override
-    public Type getType() {
-        return super.getType();
-    }
-
-    @Override
-    public Path getFilePath() {
-        return super.getFilePath();
-    }
-
-    @Override
     public List<IModInfo> getModInfos() {
         return Lists.newArrayList(this.info);
     }
@@ -149,38 +109,13 @@ public final class LaunchPluginFile extends ModFile {
     }
 
     @Override
-    public ModFileScanData compileContent() {
-        return super.compileContent();
-    }
-
-    @Override
-    public void scanFile(Consumer<Path> pathConsumer) {
-        super.scanFile(pathConsumer);
-    }
-
-    @Override
-    public void setFutureScanResult(CompletableFuture<ModFileScanData> future) {
-        super.setFutureScanResult(future);
-    }
-
-    @Override
     public ModFileScanData getScanResult() {
         return new ModFileScanData();
     }
 
     @Override
-    public void setScanResult(ModFileScanData modFileScanData, Throwable throwable) {
-        super.setScanResult(modFileScanData, throwable);
-    }
-
-    @Override
     public String getFileName() {
         return "Fermion";
-    }
-
-    @Override
-    public IModLocator getLocator() {
-        return super.getLocator();
     }
 
     @Override

@@ -11,7 +11,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
-import org.objectweb.asm.*;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -519,7 +524,7 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
      *
      * @since 1.0.0
      */
-    public RuntimeMethodAccessTransformer(@Nonnull final TransformerData data, @Nonnull final TargetDescriptor... descriptors) {
+    protected RuntimeMethodAccessTransformer(@Nonnull final TransformerData data, @Nonnull final TargetDescriptor... descriptors) {
         super(data, getClassesFromTargets(descriptors));
         this.descriptors = ImmutableSet.copyOf(new HashSet<>(Arrays.asList(descriptors)));
         this.marker = MarkerManager.getMarker(data.getOwningPluginId() + ":" + data.getName());

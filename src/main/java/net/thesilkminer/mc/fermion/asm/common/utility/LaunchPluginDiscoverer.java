@@ -2,8 +2,6 @@ package net.thesilkminer.mc.fermion.asm.common.utility;
 
 import com.google.common.collect.Lists;
 import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,9 +13,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Objects;
+import java.util.ServiceLoader;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -54,16 +52,6 @@ public final class LaunchPluginDiscoverer {
         launchPlugins.addAll(this.discoverFromPaths());
         LOGGER.i("Discovered a total of " + this.discoverIteratorSize(launchPlugins) + " plugins");
         return launchPlugins;
-    }
-
-    @Nonnull
-    public List<Pair<Path, ZipEntry>> discoverJarEntries() {
-        final List<LaunchPlugin> plugins = this.discoverFromPaths();
-        final List<Path> paths = this.discoverPaths();
-        return paths.stream()
-                .map(it -> this.discoverJarEntry(it, plugins))
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
     }
 
     @Nonnull
@@ -234,49 +222,6 @@ public final class LaunchPluginDiscoverer {
     private LaunchPlugin loadLaunchPluginWithReflection(@Nonnull final String className) throws ReflectiveOperationException {
         final Class<?> launchPluginClass = Class.forName(className, false, this.getClass().getClassLoader());
         return (LaunchPlugin) launchPluginClass.newInstance();
-    }
-
-    @Nonnull
-    private List<Pair<Path, ZipEntry>> discoverJarEntry(@Nonnull final Path jar, @Nonnull final List<LaunchPlugin> plugins) {
-        try {
-            return this.discoverJarEntryWithInputOutput(jar, plugins);
-        } catch (@Nonnull final IOException e) {
-            throw new WrappedInputOutputException(e);
-        }
-    }
-
-    @Nonnull
-    private List<Pair<Path, ZipEntry>> discoverJarEntryWithInputOutput(@Nonnull final Path jar, @Nonnull final List<LaunchPlugin> plugins) throws IOException {
-        final List<String> targets = plugins.stream()
-                .map(LaunchPlugin::getRootPackages)
-                .flatMap(Set::stream)
-                .distinct()
-                .collect(Collectors.toList());
-
-        return this.doWithZipFile(jar, file -> {
-            final List<Pair<Path, ZipEntry>> validEntries = Lists.newArrayList();
-
-            Objects.requireNonNull(file);
-            final Enumeration<? extends ZipEntry> entries = file.entries();
-            while (entries.hasMoreElements()) {
-                final ZipEntry entry = entries.nextElement();
-                if (targets.stream().anyMatch(this.constructPredicate(entry))) {
-                    validEntries.add(ImmutablePair.of(jar, entry));
-                }
-            }
-
-            return validEntries;
-        });
-    }
-
-    @Nonnull
-    private Predicate<String> constructPredicate(@Nonnull final ZipEntry entry) {
-        return it -> entry.getName().replace('/', '.').startsWith(it)
-                || entry.getName().startsWith("assets/")
-                || entry.getName().startsWith("data/")
-                || entry.getName().endsWith(".json")
-                || entry.getName().endsWith(".toml")
-                || entry.getName().endsWith(".mcmeta");
     }
 
     private int discoverIteratorSize(@Nonnull final Iterable<?> iterable) {

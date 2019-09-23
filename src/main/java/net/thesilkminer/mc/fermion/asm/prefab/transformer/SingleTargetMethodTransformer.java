@@ -46,8 +46,8 @@ public abstract class SingleTargetMethodTransformer extends TargetMethodTransfor
      *
      * @since 1.0.0
      */
-    public SingleTargetMethodTransformer(@Nonnull final TransformerData data, @Nonnull final ClassDescriptor targetClass,
-                                         @Nonnull final MethodDescriptor targetMethod) {
+    protected SingleTargetMethodTransformer(@Nonnull final TransformerData data, @Nonnull final ClassDescriptor targetClass,
+                                            @Nonnull final MethodDescriptor targetMethod) {
         super(data, targetClass, targetMethod);
         this.targetMethod = targetMethod;
     }

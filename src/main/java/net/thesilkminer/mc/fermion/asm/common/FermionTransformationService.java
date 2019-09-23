@@ -2,7 +2,6 @@ package net.thesilkminer.mc.fermion.asm.common;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -17,25 +16,19 @@ import net.minecraftforge.fml.loading.FileUtils;
 import net.thesilkminer.mc.fermion.asm.common.utility.LaunchBlackboard;
 import net.thesilkminer.mc.fermion.asm.common.utility.LaunchPluginDiscoverer;
 import net.thesilkminer.mc.fermion.asm.common.utility.Log;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Reader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
 
 public final class FermionTransformationService implements ITransformationService {
 
