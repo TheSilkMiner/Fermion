@@ -123,7 +123,10 @@ public final class FermionTransformer implements ITransformer<ClassNode> {
     }
 
     private byte[] toByteArray(@Nonnull final ClassNode node) {
-        final ClassWriter writer = new ClassWriter(Opcodes.ASM5 | ClassWriter.COMPUTE_FRAMES);
+        // We cannot compute frames because some classes may not be loaded
+        // They'll get handled anyway after all the transformations are complete anyway
+        // thanks to ModLauncher, so... whatever
+        final ClassWriter writer = new ClassWriter(Opcodes.ASM5);
         node.accept(writer);
         return writer.toByteArray();
     }
