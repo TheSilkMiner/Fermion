@@ -37,24 +37,35 @@ public interface LaunchPlugin {
     @Nonnull PluginMetadata getMetadata();
 
     /**
-     * Gets the root packages that define where the Launch Plugin files are
-     * located inside their JAR.
+     * Gets the root packages where the Launch Plugin (and its possible
+     * dependencies) are located.
      *
-     * <p>This also means that every part that is secondary to the Launch
-     * Plugin but needed for the working of the Mod must be identified here.
-     * E.g., if a mod is in package {@code com.example.mod} and the Launch
-     * Plugin is in package {@code com.example.mod.asm}, then the first one
-     * should be specified.</p>
+     * <p>Note that this identifies only the packages strictly related to
+     * the Launch Plugin itself. E.g., if a mod is in package
+     * {@code com.example.mod} and the Launch Plugin associated to that mod
+     * is in package {@code com.example.mod.asm}, then you should specify
+     * the second one, not the first.</p>
      *
-     * <p>It is illegal to specify either {@code net.minecraft} or
-     * {@code net.minecraftforge}. The string must not terminate with a dot.
-     * The set cannot contain subpackages of each other (e.g., you cannot
+     * <p>The string must not terminate with a dot.</p>
+     *
+     * <p>The set cannot contain subpackages of each other (e.g., you cannot
      * specify both {@code com.example} and {@code com.example.sub}): only
      * the parent one should be specified.</p>
      *
+     * @apiNote
+     *      Ideally, you would only specify one package and try to put
+     *      everything that relates to your Launch Plugin there. This method
+     *      can anyway return a set in case you need dependencies that are
+     *      not located (or repackaged) in that JAR.
+     *
+     * @implNote
+     *      Implementations may assume that this set always contains one
+     *      element. Implementations are also free to ignore anything but
+     *      the first element in case a Set isn't supported.
+     *
      * @return
-     *      A {@link Set} containing the root packages that define where the
-     *      Launch Plugin files are located inside their JAR.
+     *      A {@link Set} containing the root packages where the Launch Plugin
+     *      (and its possible dependencies) are located.
      *
      * @since 1.0.0
      */
