@@ -66,6 +66,7 @@ public final class FermionTransformationService implements ITransformationServic
         LOGGER.d("Loading configuration files plugin per plugin");
         this.blackboard.loadConfig(configDirectory);
         LOGGER.i("Configuration loaded");
+        this.discoverer.extractFermion(!this.environmentConfiguration.get("disable_jar_copying"));
     }
 
     @Override
@@ -142,6 +143,12 @@ public final class FermionTransformationService implements ITransformationServic
         if (!object.has("emergency_mode")) {
             object.add("emergency_mode", this.getJsonObject(it -> {
                 it.add("__comment", new JsonPrimitive("If emergency mode is enabled, no transformers will load. Can be used for debugging, but DO NOT TURN IT ON!"));
+                it.add("enabled", new JsonPrimitive(false));
+            }));
+        }
+        if (!object.has("disable_jar_copying")) {
+            object.add("disable_jar_copying", this.getJsonObject(it -> {
+                it.add("__comment", new JsonPrimitive("Disables the JAR copying feature. This feature is necessary for Fermion to load correctly. Disabling it is not wise."));
                 it.add("enabled", new JsonPrimitive(false));
             }));
         }

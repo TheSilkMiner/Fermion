@@ -1,25 +1,62 @@
 package net.thesilkminer.mc.fermion.asm.common.utility;
 
 import com.google.common.collect.Lists;
+import cpw.mods.gross.Java9ClassLoaderUtil;
 import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Enumeration;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 public final class LaunchPluginDiscoverer {
+
+    private static final class LaunchPluginClassLoader extends URLClassLoader {
+        private LaunchPluginClassLoader(@Nonnull final URL[] urls, @Nonnull final ClassLoader parent) {
+            super(urls, parent);
+        }
+
+        @Override
+        protected void addURL(@Nullable final URL url) {
+            super.addURL(url);
+        }
+
+        private void addPaths(@Nonnull final List<Path> paths) {
+            paths.stream()
+                    .filter(Objects::nonNull)
+                    .map(Path::toUri)
+                    .map(this::toUrl)
+                    .forEach(this::addURL);
+        }
+
+        @Nonnull
+        private URL toUrl(@Nonnull final URI uri) {
+            try {
+                return uri.toURL();
+            } catch (@Nonnull final MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     private static final class WrappedInputOutputException extends RuntimeException {
         private WrappedInputOutputException(@Nonnull final IOException cause) {
@@ -35,6 +72,8 @@ public final class LaunchPluginDiscoverer {
     private static final Log LOGGER = Log.of("LaunchPluginDiscoverer");
 
     private final List<Path> transformersPaths = Lists.newArrayList();
+
+    private Path fermionJar = null;
 
     private LaunchPluginDiscoverer() {}
 
@@ -54,11 +93,85 @@ public final class LaunchPluginDiscoverer {
         return launchPlugins;
     }
 
+    public void extractFermion(final boolean isEnabled) {
+        LOGGER.i("Copying Fermion Launch Plugin JAR to allow it to be loaded by Forge's classloader");
+        LOGGER.d("So, this is a FUCKING DIRTY HACK! For some reason Forge thought that services can only be discovered once");
+        LOGGER.d("This means that files that are identified as transformers will not get loaded again, because 'boo hoo classloading'");
+        LOGGER.d("So fuck off, we'll copy the files over and let Forge go fuck itself.");
+        LOGGER.d("If you're worried about leftovers, you need to be, but Fermion is good enough to cleanup after himself");
+        LOGGER.d("We'll delete all the fucking files when the client or server shuts down, I promise");
+
+        if (Objects.isNull(this.fermionJar)) {
+            LOGGER.e("Actually, this is a gigantic issue... WE DO NOT EXIST!!!", new IllegalStateException("Fermion JAR path is null, but Fermion is currently loading. Like, WTF?"));
+            LOGGER.e("Maybe we're in a dev environment? I'll skip processing for now");
+            return;
+        }
+
+        final Path newJarFilePath = this.fermionJar.resolve("./transformers/../../__extraction__fermion_extraction__mod_file_Fermion_mod.jar").normalize();
+        Runtime.getRuntime().addShutdownHook(new Thread(() ->  {
+            try {
+                Files.deleteIfExists(newJarFilePath);
+            } catch (@Nonnull final IOException e) {
+                LOGGER.e("Well, nice", e);
+            }
+        }));
+
+        if (!isEnabled) {
+            LOGGER.w("Disabling due to request: this won't go well, honey");
+            return;
+        }
+
+        this.doCopy(this.fermionJar, newJarFilePath);
+    }
+
+    private void doCopy(@Nonnull final Path in, @Nonnull final Path out) {
+        try {
+            this.doWithZipFile(in, inFile -> {
+                Objects.requireNonNull(inFile);
+                LOGGER.d("Using '" + in + "' as input");
+                LOGGER.d("Using '" + out + "' as output");
+                if (Files.exists(out)) {
+                    LOGGER.d("For some reason the output file exists... Deleting");
+                    Files.delete(out);
+                }
+                Files.createFile(out);
+                try {
+                    Thread.sleep(1000);
+                } catch (@Nonnull final InterruptedException ignored) {}
+                this.doZipFileCopy(inFile, out.toAbsolutePath().normalize().toFile());
+                return null;
+            });
+        } catch (@Nonnull final IOException e) {
+            throw new WrappedInputOutputException(e);
+        }
+    }
+
+    private void doZipFileCopy(@Nonnull final ZipFile in, @Nonnull final File out) throws IOException {
+        try (@Nonnull final ZipOutputStream o = new ZipOutputStream(new FileOutputStream(out))) {
+            final Enumeration<? extends ZipEntry> entries = in.entries();
+            while (entries.hasMoreElements()) {
+                final ZipEntry entry = entries.nextElement();
+                if (entry.getName().startsWith("META-INF/services/")) continue;
+                final ZipEntry outEntry = new ZipEntry(entry.getName());
+                o.putNextEntry(outEntry);
+                try (@Nonnull final BufferedInputStream bufIn = new BufferedInputStream(in.getInputStream(entry))) {
+                    while (bufIn.available() > 0) {
+                        o.write(bufIn.read());
+                    }
+                }
+                o.closeEntry();
+            }
+            o.finish();
+        }
+    }
+
     @Nonnull
     private List<LaunchPlugin> discoverFromPaths() {
         final List<LaunchPlugin> launchPlugins = Lists.newArrayList();
         final List<Path> candidateFiles = this.discoverPaths();
-        candidateFiles.forEach(it -> this.loadLaunchPlugin(it, launchPlugins));
+        final LaunchPluginClassLoader loader = new LaunchPluginClassLoader(Java9ClassLoaderUtil.getSystemClassPathURLs(), this.getClass().getClassLoader());
+        loader.addPaths(candidateFiles);
+        candidateFiles.forEach(it -> this.loadLaunchPlugin(it, launchPlugins, loader));
         return launchPlugins;
     }
 
@@ -150,6 +263,10 @@ public final class LaunchPluginDiscoverer {
                 LOGGER.i("Found valid Launch Plugin '" + file + "'. Adding to loading queue");
                 paths.add(file);
             }
+            if (this.examineZipFileForFermionJar(file)) {
+                LOGGER.i("Found Fermion JAR file '" + file + "'");
+                this.fermionJar = file;
+            }
         } catch (@Nonnull final IOException e) {
             throw new WrappedInputOutputException(e);
         }
@@ -175,29 +292,37 @@ public final class LaunchPluginDiscoverer {
         });
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
+    private boolean examineZipFileForFermionJar(@Nonnull final Path file) throws IOException {
+        return this.doWithZipFile(file, jar -> {
+            Objects.requireNonNull(jar);
+            return this.getTargetEntry(jar, "META-INF/.fermionlocation") != null;
+        });
+    }
+
     @Nullable
     @SuppressWarnings("SameParameterValue")
     private ZipEntry getTargetEntry(@Nonnull final ZipFile file, @Nonnull final String name) {
         return file.getEntry(name);
     }
 
-    private void loadLaunchPlugin(@Nonnull final Path file, @Nonnull final List<LaunchPlugin> plugins) {
+    private void loadLaunchPlugin(@Nonnull final Path file, @Nonnull final List<LaunchPlugin> plugins, @Nonnull final ClassLoader loader) {
         try {
-            this.loadLaunchPluginFromZip(file, plugins);
+            this.loadLaunchPluginFromZip(file, plugins, loader);
         } catch (@Nonnull final IOException e) {
             throw new WrappedInputOutputException(e);
         }
     }
 
     @SuppressWarnings("SpellCheckingInspection")
-    private void loadLaunchPluginFromZip(@Nonnull final Path file, @Nonnull final List<LaunchPlugin> plugins) throws IOException {
+    private void loadLaunchPluginFromZip(@Nonnull final Path file, @Nonnull final List<LaunchPlugin> plugins, @Nonnull final ClassLoader loader) throws IOException {
         this.doWithZipFile(file, jar -> {
             Objects.requireNonNull(jar);
             final ZipEntry entry = this.getTargetEntry(jar, "META-INF/services/net.thesilkminer.mc.fermion.asm.api.LaunchPlugin");
             Objects.requireNonNull(entry);
             try (final BufferedReader stream = new BufferedReader(new InputStreamReader(jar.getInputStream(entry)))) {
                 final String line = stream.readLine();
-                plugins.add(this.loadLaunchPlugin(line));
+                plugins.add(this.loadLaunchPlugin(line, loader));
             }
             return null;
         });
@@ -210,17 +335,17 @@ public final class LaunchPluginDiscoverer {
     }
 
     @Nonnull
-    private LaunchPlugin loadLaunchPlugin(@Nonnull final String className) {
+    private LaunchPlugin loadLaunchPlugin(@Nonnull final String className, @Nonnull final ClassLoader loader) {
         try {
-            return this.loadLaunchPluginWithReflection(className);
+            return this.loadLaunchPluginWithReflection(className, loader);
         } catch (@Nonnull final ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Nonnull
-    private LaunchPlugin loadLaunchPluginWithReflection(@Nonnull final String className) throws ReflectiveOperationException {
-        final Class<?> launchPluginClass = Class.forName(className, false, this.getClass().getClassLoader());
+    private LaunchPlugin loadLaunchPluginWithReflection(@Nonnull final String className, @Nonnull final ClassLoader loader) throws ReflectiveOperationException {
+        final Class<?> launchPluginClass = Class.forName(className, false, loader);
         return (LaunchPlugin) launchPluginClass.newInstance();
     }
 
