@@ -2,6 +2,7 @@ package net.thesilkminer.mc.fermion.asm.prefab.transformer;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import net.thesilkminer.mc.fermion.asm.api.MappingUtilities;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.MethodDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
@@ -18,6 +19,7 @@ import org.objectweb.asm.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -136,8 +138,13 @@ public abstract class TargetMethodTransformer extends AbstractTransformer {
     @Override
     public final BiFunction<Integer, ClassVisitor, ClassVisitor> getClassVisitorCreator() {
         if (this.methodVisitors == null) {
-            this.methodVisitors = this.getMethodVisitorCreators();
+            this.methodVisitors = this.getMethodVisitorCreators()
+                    .entrySet()
+                    .stream()
+                    .map(this::remapMethodIfNeeded)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             this.targetMethods.stream()
+                    .map(this::remapMethodIfNeeded)
                     .map(this.methodVisitors::get)
                     .filter(Objects::isNull)
                     .findAny()
@@ -174,5 +181,17 @@ public abstract class TargetMethodTransformer extends AbstractTransformer {
                 return creator.apply(method, ImmutablePair.of(v, parent));
             }
         };
+    }
+
+    @Nonnull
+    private MethodDescriptor remapMethodIfNeeded(@Nonnull final MethodDescriptor in) {
+        return MethodDescriptor.of(MappingUtilities.INSTANCE.mapMethod(in.getName()), in.getArguments(), in.getReturnType());
+    }
+
+    @Nonnull
+    private <V> Map.Entry<MethodDescriptor, V> remapMethodIfNeeded(@Nonnull final Map.Entry<MethodDescriptor, V> in) {
+        final MethodDescriptor original = in.getKey();
+        final MethodDescriptor remapped = MethodDescriptor.of(MappingUtilities.INSTANCE.mapMethod(original.getName()), original.getArguments(), original.getReturnType());
+        return new AbstractMap.SimpleImmutableEntry<>(remapped, in.getValue());
     }
 }
