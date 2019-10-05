@@ -1,0 +1,129 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+            name 'Minecraft Forge'
+            url 'https://files.minecraftforge.net/maven'
+        }
+        maven {
+            name 'OpenMods Third Party'
+            url 'https://repo.openmods.info/artifactory/simple/thirdparty'
+        }
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '2.3-SNAPSHOT'
+    }
+}
+
+plugins {
+    id 'idea'
+    id 'java'
+    id 'eclipse'
+	id 'visual-studio'
+	id 'maven'
+    id 'net.minecrell.licenser' version '0.4.1'
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+idea {
+    module {
+        inheritOutputDirs = true
+    }
+}
+
+license {
+    header = project.file('NOTICE')
+
+    include '**/*.java'
+    include '**/*.kt'
+
+    ext {
+        year = Calendar.getInstance().get(Calendar.YEAR)
+        name = 'TheSilkMiner'
+        email = 'thesilkminer <at> outlook <dot> com'
+        app = "Fermion"
+    }
+
+    ignoreFailures = false
+}
+
+version = "1.0.0"
+group = "net.thesilkminer.mc.fermion" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "Fermion"
+
+sourceCompatibility = targetCompatibility = '1.8'
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+
+minecraft {
+    version = "1.12.2-14.23.5.2768"
+    runDir = "run"
+    mappings = "snapshot_20180814"
+
+    replace '@VERSION@', project.version
+    replace '@FINGERPRINT@', project.findProperty('signSHA1')
+}
+
+repositories {
+	mavenCentral()
+	jcenter()
+}
+
+dependencies {
+    
+}
+
+processResources {
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mc_version", project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        // replace version and mcversion
+        expand 'version':project.version, 'mc_version':project.minecraft.version
+    }
+        
+    // copy everything else except the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+task deobfJar(type: Jar, dependsOn: 'jar') {
+    from "build/source/main"
+    classifier "deobf"
+}
+
+task signJar(type: SignJar, dependsOn: 'reobfJar') {
+    onlyIf {
+        project.hasProperty('keystore')
+    }
+    keyStore = project.findProperty('keystore')
+    alias = project.findProperty('keystoreAlias')
+    storePass = project.findProperty('keystorePass')
+    keyPass = project.findProperty('keyPass')
+    inputFile = jar.archivePath
+    outputFile = jar.archivePath
+}
+
+build.dependsOn signJar
+
+artifacts {
+    deobfJar
+}
+
+jar {
+    manifest.attributes "FMLCorePluginContainsFMLMod": "true"
+    manifest.attributes "FMLCorePlugin": "net.thesilkminer.mc.fermion.asm.common.FermionPlugin"
+}
+
+wrapper {
+	gradleVersion = "${gradle_version}"
+    distributionType = Wrapper.DistributionType.ALL
+}

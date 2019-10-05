@@ -1,0 +1,29 @@
+{
+  "modListVersion": "2",
+  "modList": [
+    {
+      "modid": "fermion",
+      "name": "Fermion",
+      "description": "The Java coremodding API for Forge 1.14 and above.\nMaking non-JS coremods possible since 2019.",
+      "version": "${version}",
+      "mcversion": "${mc_version}",
+      "url": "http://thesilkminer.net/mc-mod/fermion",
+      "updateUrl": "Curse",
+      "authorList": [
+        "TheSilkMiner (aka Silk)"
+      ],
+      "credits": "Thank cpw for making this workaround possible",
+      "logoFile": "logo.png",
+      "screenshots": [
+      ],
+      "parent": "",
+      "requiredMods": [
+      ],
+      "dependencies": [
+      ],
+      "dependants": [
+      ],
+      "useDependencyInformation": "false"
+    }
+  ]
+}
