@@ -31,7 +31,7 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
 
     public FermionCoreCompanion() {
         super("fermion.asm");
-        //this.registerTransformers();
+        this.registerTransformers();
     }
 
     @Nonnull
@@ -51,13 +51,13 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
 
     private void registerTransformers() {
         /* Actual transformers */
-        this.registerTransformer(new ModLoaderTransformer());
-        this.registerTransformer(new ModListTransformer());
+        //this.registerTransformer(new ModLoaderTransformer());
+        //this.registerTransformer(new ModListTransformer());
         this.registerTransformer(new TransformingUtilitiesTransformer());
 
         /* Vanity transformers */
-        this.registerTransformer(new BackToSingleThreadsTransformer());
-        this.registerTransformer(new StartupMessagesColorizerTransformer());
+        //this.registerTransformer(new BackToSingleThreadsTransformer());
+        //this.registerTransformer(new StartupMessagesColorizerTransformer());
 
         /* Test transformers */
         this.registerTransformer(new TestHookingVanillaTransformer());

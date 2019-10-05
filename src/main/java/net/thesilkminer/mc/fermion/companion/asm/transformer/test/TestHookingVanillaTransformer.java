@@ -20,10 +20,10 @@ public final class TestHookingVanillaTransformer extends SingleTargetMethodTrans
                 TransformerData.Builder.create()
                         .setOwningPluginId("fermion.asm")
                         .setName("test_hooking_vanilla_transformer")
-                        .setDescription("This adds a hook in EffectInstance that gets called on loading to test whether transforming Vanilla works")
+                        .setDescription("This adds a hook in PotionEffect that gets called on loading to test whether transforming Vanilla works")
                         .setDisabledByDefault()
                         .build(),
-                ClassDescriptor.of("net.minecraft.potion.EffectInstance"),
+                ClassDescriptor.of("net.minecraft.potion.PotionEffect"),
                 MethodDescriptor.of("<clinit>",
                         ImmutableList.of(),
                         ClassDescriptor.of(void.class))
@@ -45,8 +45,15 @@ public final class TestHookingVanillaTransformer extends SingleTargetMethodTrans
                 final Label l0 = new Label();
                 super.visitLabel(l0);
                 super.visitLineNumber(10 + 3, l0);
-                super.visitFieldInsn(Opcodes.GETSTATIC, "net/minecraft/potion/EffectInstance", MappingUtilities.INSTANCE.mapField("field_180155_a"), "Lorg/apache/logging/log4j/Logger;");
-                super.visitMethodInsn(Opcodes.INVOKESTATIC, "net/thesilkminer/mc/fermion/companion/hook/EffectInstanceHook", "logTest", "(Lorg/apache/logging/log4j/Logger;)V", false);
+                super.visitFieldInsn(Opcodes.GETSTATIC,
+                        "net/minecraft/potion/PotionEffect",
+                        "LOGGER",
+                        "Lorg/apache/logging/log4j/Logger;");
+                super.visitMethodInsn(Opcodes.INVOKESTATIC,
+                        "net/thesilkminer/mc/fermion/companion/hook/PotionEffectHook",
+                        "logTest",
+                        "(Lorg/apache/logging/log4j/Logger;)V",
+                        false);
                 final Label l1 = new Label();
                 super.visitLabel(l1);
                 super.visitLineNumber(10 + 4, l1);

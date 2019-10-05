@@ -23,8 +23,8 @@ public final class TestSingleTargetMethodTransformer extends SingleTargetMethodT
                         .setDisabledByDefault()
                         .build(),
                 ClassDescriptor.of("net.thesilkminer.mc.fermion.Fermion"),
-                MethodDescriptor.of("clientSetup",
-                        ImmutableList.of(ClassDescriptor.of("net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent")),
+                MethodDescriptor.of("onPostInitialization",
+                        ImmutableList.of(ClassDescriptor.of("net.minecraftforge.fml.common.event.FMLPostInitializationEvent")),
                         ClassDescriptor.of(void.class))
         );
     }
@@ -39,12 +39,14 @@ public final class TestSingleTargetMethodTransformer extends SingleTargetMethodT
                 super.visitCode();
                 final Label l0 = new Label();
                 super.visitLabel(l0);
-                super.visitLineNumber(3 * 10 + 8, l0);
-                super.visitFieldInsn(Opcodes.GETSTATIC, "net/thesilkminer/mc/fermion/Fermion", "LOGGER", "Lorg/apache/logging/log4j/Logger;");
+                super.visitLineNumber(7 * 10 + 6, l0);
+                super.visitFieldInsn(Opcodes.GETSTATIC, "net/thesilkminer/mc/fermion/Fermion", "LOGGER",
+                        "Lorg/apache/logging/log4j/Logger;");
                 super.visitVarInsn(Opcodes.ALOAD, 1);
-                super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "net/minecraftforge/fml/event/lifecycle/FMLClientSetupEvent", "getMinecraftSupplier", "()Ljava/util/function/Supplier;", false);
-                super.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/function/Supplier", "get", "()Ljava/lang/Object;", true);
-                super.visitMethodInsn(Opcodes.INVOKEINTERFACE, "org/apache/logging/log4j/Logger", "debug", "(Ljava/lang/Object;)V", true);
+                super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "net/minecraftforge/fml/common/event/FMLPostInitializationEvent",
+                        "getModState", "()Lnet/minecraftforge/fml/common/LoaderState$ModState;", false);
+                super.visitMethodInsn(Opcodes.INVOKEINTERFACE, "org/apache/logging/log4j/Logger", "debug",
+                        "(Ljava/lang/Object;)V", true);
             }
 
             @Override

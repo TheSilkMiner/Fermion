@@ -3,7 +3,6 @@ package net.thesilkminer.mc.fermion.asm.prefab.transformer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import net.thesilkminer.mc.fermion.asm.api.MappingUtilities;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.FieldDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.MethodDescriptor;
@@ -482,7 +481,6 @@ public abstract class RuntimeFieldAccessTransformer extends AbstractTransformer 
                         .filter(Map.Entry::getValue)
                         .map(Map.Entry::getKey)
                         .map(TargetDescriptor::getField)
-                        .map(this::remapNameIfNeeded)
                         .filter(it -> Objects.equals(it, fieldDescriptor))
                         .findAny();
 
@@ -491,7 +489,6 @@ public abstract class RuntimeFieldAccessTransformer extends AbstractTransformer 
                             .filter(Map.Entry::getValue)
                             .map(Map.Entry::getKey)
                             .map(TargetDescriptor::getField)
-                            .map(this::remapNameIfNeeded)
                             .filter(it -> Objects.equals(it, staticFieldDescriptor))
                             .findAny();
                 }
@@ -539,11 +536,6 @@ public abstract class RuntimeFieldAccessTransformer extends AbstractTransformer 
                 }
 
                 return parent;
-            }
-
-            @Nonnull
-            private FieldDescriptor remapNameIfNeeded(@Nonnull final FieldDescriptor in) {
-                return FieldDescriptor.of(MappingUtilities.INSTANCE.mapField(in.getName()), in.getType(), in.isStatic());
             }
         };
     }

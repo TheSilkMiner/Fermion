@@ -20,8 +20,8 @@ public final class TestTargetMethodTransformer extends TargetMethodTransformer {
 
     private static final Logger LOGGER = LogManager.getLogger("TestTargetMethodTransformer");
 
-    private static final MethodDescriptor SETUP_METHOD_DESCRIPTOR = MethodDescriptor.of("setup",
-            ImmutableList.of(ClassDescriptor.of("net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent")),
+    private static final MethodDescriptor SETUP_METHOD_DESCRIPTOR = MethodDescriptor.of("onPreInitialization",
+            ImmutableList.of(ClassDescriptor.of("net.minecraftforge.fml.common.event.FMLPreInitializationEvent")),
             ClassDescriptor.of(void.class));
     private static final MethodDescriptor CONSTRUCTOR = MethodDescriptor.of("<init>",
             ImmutableList.of(),
@@ -49,7 +49,7 @@ public final class TestTargetMethodTransformer extends TargetMethodTransformer {
                     public void visitLdcInsn(@Nonnull final Object value) {
                         if (value instanceof String) {
                             final String ldcConstant = (String) value;
-                            if ("FMLCommonSetupEvent".equalsIgnoreCase(ldcConstant)) {
+                            if ("FMLPreInitializationEvent".equalsIgnoreCase(ldcConstant)) {
                                 super.visitLdcInsn(ldcConstant + " (Hey there, TestTargetMethodTransformer here)");
                                 return;
                             }
@@ -58,25 +58,12 @@ public final class TestTargetMethodTransformer extends TargetMethodTransformer {
                     }
                 },
                 CONSTRUCTOR, (desc, pair) -> new MethodVisitor(pair.getLeft(), pair.getRight()) {
-                    private boolean hasSeenLoggerGetStatic = false;
-
                     @Override
                     public void visitFieldInsn(final int opcode, @Nonnull final String owner, @Nonnull final String name,
                                                @Nonnull final String descriptor) {
-                        if (!this.hasSeenLoggerGetStatic) {
-                            super.visitFieldInsn(opcode, owner, name, descriptor);
-                            if (opcode == Opcodes.GETSTATIC && "LOGGER".equals(name)) {
-                                this.hasSeenLoggerGetStatic = true;
-                            }
-                        } else {
-                            if (opcode == Opcodes.GETSTATIC && "MARKER".equals(name)) {
-                                super.visitFieldInsn(opcode, owner, "TRANSFORMER_MARKER", descriptor);
-                                LOGGER.info("Replaced GETSTATIC for 'MARKER' with transformed version in method " + desc + " successfully");
-                            } else {
-                                super.visitFieldInsn(opcode, owner, name, descriptor);
-                            }
-                            this.hasSeenLoggerGetStatic = false;
-                        }
+                        final String newName = (opcode == Opcodes.GETSTATIC && "LOGGER".equals(name)) ? "TRANSFORMER_LOGGER" : name;
+                        LOGGER.info("Visiting field with name '" + name + "' became '" + newName + "'");
+                        super.visitFieldInsn(opcode, owner, newName, descriptor);
                     }
                 }
         );

@@ -82,24 +82,18 @@ public final class FermionTransformer implements IClassTransformer {
 
         if (data.emergencyMode) return basicClass;
 
-        LOGGER.d("Got 'em: " + name + " --> " + transformedName);
-
         // We create the class descriptor with the transformed class name, because I hope nobody is actually attempting
-        // to transform a class using MOJ names. And if they are... oh okay fine, I'll just merge both ClassDescriptors
+        // to transform a class using MOJ names. And if they are... their problem
         final ClassDescriptor classDescriptor = ClassDescriptor.of(transformedName);
-        final ClassDescriptor mojClassDescriptor = ClassDescriptor.of(name);
 
         final EffectivelyFinalByteArray finalClassBytes = EffectivelyFinalByteArray.of(basicClass);
-        final List<Transformer> transformers = Optional.ofNullable(data.classToTransformer.get(classDescriptor)).orElseGet(Lists::newArrayList);
+        final List<Transformer> transformers = Lists.newArrayList();
 
-        Optional.ofNullable(data.classToTransformer.get(mojClassDescriptor)).ifPresent(list -> list.forEach(it -> {
-            LOGGER.d("Injecting MOJ-mapping-based Transformer " + it + " into list for class " + classDescriptor.getClassName());
-            transformers.add(it);
-            // And this is the maximum amount of support they'll ever get.
-        }));
+        transformers.addAll(Optional.ofNullable(data.classToTransformer.get(classDescriptor)).orElseGet(Lists::newArrayList));
 
         if (transformers.size() == 0) return basicClass;
 
+        LOGGER.d("Got 'em: " + name + " --> " + transformedName);
         LOGGER.i("************************************************************************");
         LOGGER.i("Attempting to transform class '" + classDescriptor.getClassName() + "'");
         LOGGER.d("Injecting universal transformer 'fermion.asm.service:universal'");
@@ -150,15 +144,16 @@ public final class FermionTransformer implements IClassTransformer {
 
         if (data.environmentConfiguration.get("dump")) this.dumpClassToDisk(transformedName, completelyTransformedClass);
 
-        return basicClass;
+        return completelyTransformedClass;
     }
 
     @SuppressWarnings("MethodCanBeVariableArityMethod")
     private void dumpClassToDisk(@Nonnull final String name, @Nonnull final byte[] classData) {
         if (data.dumpRoot == null) throw new IllegalStateException("this.dumpRoot == null");
-        LOGGER.d("Dumping class data for " + name);
+        final String dumpName = name.replace('.', '/');
+        LOGGER.d("Dumping class data for " + dumpName);
 
-        final Path dumpLocation = data.dumpRoot.resolve("./" + name + ".class").toAbsolutePath().normalize();
+        final Path dumpLocation = data.dumpRoot.resolve("./" + dumpName + ".class").toAbsolutePath().normalize();
         final Path parentDirectory = dumpLocation.resolve("./..").toAbsolutePath().normalize();
         try {
             FileUtils.getOrCreateDirectory(parentDirectory, parentDirectory.getFileName().toString());
@@ -166,14 +161,14 @@ public final class FermionTransformer implements IClassTransformer {
                 Files.createFile(dumpLocation);
             }
         } catch (final IOException e) {
-            LOGGER.e("Unable to create file to dump class " + name + " on disk.", e);
+            LOGGER.e("Unable to create file to dump class " + dumpName + " on disk.", e);
         }
 
         try (final BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dumpLocation.toFile()))) {
             writer.write(classData);
             LOGGER.d("Dumping completed");
         } catch (final IOException e) {
-            LOGGER.e("Unable to dump class " + name + " to disk!", e);
+            LOGGER.e("Unable to dump class " + dumpName + " to disk!", e);
         }
     }
 }

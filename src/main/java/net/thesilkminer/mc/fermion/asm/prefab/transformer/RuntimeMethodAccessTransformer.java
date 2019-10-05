@@ -3,7 +3,6 @@ package net.thesilkminer.mc.fermion.asm.prefab.transformer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import net.thesilkminer.mc.fermion.asm.api.MappingUtilities;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.MethodDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
@@ -614,7 +613,6 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
                         .filter(it -> ((access & Opcodes.ACC_STATIC) != 0 && it.isTargetMethodStatic())
                                 || ((access & Opcodes.ACC_STATIC) == 0 && !it.isTargetMethodStatic()))
                         .map(TargetDescriptor::getMethod)
-                        .map(this::remapNameIfNeeded)
                         .filter(it -> Objects.equals(it, descriptor))
                         .findAny();
 
@@ -640,11 +638,6 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
                 }
 
                 return (v, mv) -> null;
-            }
-
-            @Nonnull
-            private MethodDescriptor remapNameIfNeeded(@Nonnull final MethodDescriptor in) {
-                return MethodDescriptor.of(MappingUtilities.INSTANCE.mapField(in.getName()), in.getArguments(), in.getReturnType());
             }
         };
     }

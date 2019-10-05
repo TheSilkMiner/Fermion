@@ -54,8 +54,8 @@ public final class FermionTransformationSetup implements IFMLCallHook {
         LOGGER.i("Setup phase for Fermion has begun");
         LOGGER.d("Retrieving environment data from FML");
         this.data = FermionPlugin.injectedData;
-        this.initialize();
         this.onLoad();
+        this.initialize();
         FermionTransformer.accept(this.blackboard, this.environmentConfiguration);
         return null;
     }
