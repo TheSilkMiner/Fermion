@@ -10,8 +10,6 @@ import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
 import net.thesilkminer.mc.fermion.asm.prefab.AbstractTransformer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.MarkerManager;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
@@ -507,9 +505,7 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
         }
     }
 
-    private static final Logger LOGGER = LogManager.getLogger("RuntimeFieldAccessTransformer");
-
-    private final Marker marker;
+    private final Logger logger;
     private final Set<TargetDescriptor> descriptors;
 
     /**
@@ -528,7 +524,7 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
     protected RuntimeMethodAccessTransformer(@Nonnull final TransformerData data, @Nonnull final TargetDescriptor... descriptors) {
         super(data, getClassesFromTargets(descriptors));
         this.descriptors = ImmutableSet.copyOf(new HashSet<>(Arrays.asList(descriptors)));
-        this.marker = MarkerManager.getMarker(data.getOwningPluginId() + ":" + data.getName());
+        this.logger = LogManager.getLogger("RuntimeMethodAccessTransformer/" + data.getOwningPluginId() + ":" + data.getName());
     }
 
     @Nonnull
@@ -567,13 +563,11 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
 
                     if (descriptor.equals(methodClass)) {
                         this.targetDescriptors.put(desc, true);
-                        LOGGER.info(RuntimeMethodAccessTransformer.this.marker,
-                                "Found class '" + name + "' matching target method '" + desc.getMethod().getName() + "'");
+                        RuntimeMethodAccessTransformer.this.logger.info("Found class '" + name + "' matching target method '" + desc.getMethod().getName() + "'");
                     }
                     if (descriptor.equals(accessorClass)) {
                         this.targetDescriptors.put(desc, false);
-                        LOGGER.info(RuntimeMethodAccessTransformer.this.marker,
-                                "Found class '" + name + "' matching accessor '" + desc.getAccessor().toString() + "'");
+                        RuntimeMethodAccessTransformer.this.logger.info("Found class '" + name + "' matching accessor '" + desc.getAccessor().toString() + "'");
                     }
                 }
             }
@@ -598,8 +592,7 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
 
                 if (newAccess != access) {
                     // This is a method to transform, and a method cannot be the accessor of itself, so...
-                    LOGGER.info(RuntimeMethodAccessTransformer.this.marker,
-                            "Made method '" + methodDescriptor.toString() + "' public (new access: " + newAccess + ")");
+                    RuntimeMethodAccessTransformer.this.logger.info("Made method '" + methodDescriptor.toString() + "' public (new access: " + newAccess + ")");
                     return super.visitMethod(newAccess, name, descriptor, signature, exceptions);
                 }
 
@@ -641,8 +634,7 @@ public abstract class RuntimeMethodAccessTransformer extends AbstractTransformer
                 if (opt.isPresent()) {
                     final TargetDescriptor found = opt.get();
 
-                    LOGGER.info(RuntimeMethodAccessTransformer.this.marker,
-                            "Found accessor method '" + descriptor.toString() + "': overwriting with access code");
+                    RuntimeMethodAccessTransformer.this.logger.info("Found accessor method '" + descriptor.toString() + "': overwriting with access code");
 
                     return (v, mv) -> new MethodCallerVisitor(v, mv, found, (access & Opcodes.ACC_STATIC) != 0);
                 }

@@ -11,8 +11,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.MarkerManager;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -46,9 +44,7 @@ import java.util.stream.Collectors;
  */
 public abstract class TargetMethodTransformer extends AbstractTransformer {
 
-    private static final Logger LOGGER = LogManager.getLogger("TargetMethodTransformer");
-
-    private final Marker marker;
+    private final Logger logger;
     private final List<MethodDescriptor> targetMethods;
 
     private Map<MethodDescriptor, BiFunction<MethodDescriptor, Pair<Integer, MethodVisitor>, MethodVisitor>> methodVisitors;
@@ -74,7 +70,7 @@ public abstract class TargetMethodTransformer extends AbstractTransformer {
         super(data, targetClass);
         Preconditions.checkArgument(Preconditions.checkNotNull(targetMethods).length > 0, "At least one method target must be given");
         this.targetMethods = ImmutableList.copyOf(Arrays.asList(targetMethods));
-        this.marker = MarkerManager.getMarker(this.getData().getOwningPluginId() + ":" + this.getData().getName());
+        this.logger = LogManager.getLogger("TargetMethodTransformer/" + this.getData().getOwningPluginId() + ":" + this.getData().getName());
     }
 
     /**
@@ -174,9 +170,7 @@ public abstract class TargetMethodTransformer extends AbstractTransformer {
 
                 if (Objects.isNull(creator)) return parent;
 
-                LOGGER.info(TargetMethodTransformer.this.marker,
-                        "Found target method described by method descriptor '" + method +
-                                "': calling transforming function now");
+                TargetMethodTransformer.this.logger.info("Found target method described by method descriptor '" + method + "': calling transforming function now");
 
                 return creator.apply(method, ImmutablePair.of(v, parent));
             }
