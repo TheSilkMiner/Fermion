@@ -137,8 +137,10 @@ public abstract class TargetMethodTransformer extends AbstractTransformer {
             this.methodVisitors = this.getMethodVisitorCreators()
                     .entrySet()
                     .stream()
+                    .map(this::remapMethodIfNeeded)
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             this.targetMethods.stream()
+                    .map(this::remapMethodIfNeeded)
                     .map(this.methodVisitors::get)
                     .filter(Objects::isNull)
                     .findAny()
@@ -173,5 +175,17 @@ public abstract class TargetMethodTransformer extends AbstractTransformer {
                 return creator.apply(method, ImmutablePair.of(v, parent));
             }
         };
+    }
+
+    @Nonnull
+    private MethodDescriptor remapMethodIfNeeded(@Nonnull final MethodDescriptor in) {
+        return MethodDescriptor.of(MappingUtilities.INSTANCE.mapMethod(in.getName()), in.getArguments(), in.getReturnType());
+    }
+
+    @Nonnull
+    private <V> Map.Entry<MethodDescriptor, V> remapMethodIfNeeded(@Nonnull final Map.Entry<MethodDescriptor, V> in) {
+        final MethodDescriptor original = in.getKey();
+        final MethodDescriptor remapped = MethodDescriptor.of(MappingUtilities.INSTANCE.mapMethod(original.getName()), original.getArguments(), original.getReturnType());
+        return new AbstractMap.SimpleImmutableEntry<>(remapped, in.getValue());
     }
 }
