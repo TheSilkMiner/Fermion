@@ -8,8 +8,7 @@ import net.thesilkminer.mc.fermion.asm.api.PluginMetadata;
 import net.thesilkminer.mc.fermion.asm.api.transformer.Transformer;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerRegistry;
 import net.thesilkminer.mc.fermion.asm.prefab.AbstractLaunchPlugin;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.ModListTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.ModLoaderTransformer;
+import net.thesilkminer.mc.fermion.companion.asm.transformer.ModDiscovererTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.TransformingUtilitiesTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestHookingVanillaTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeFieldAccessTransformer;
@@ -17,8 +16,7 @@ import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeMet
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestSingleTargetMethodTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestTargetMethodTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestTransformerAlwaysDisabled;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.vanity.BackToSingleThreadsTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.vanity.StartupMessagesColorizerTransformer;
+import net.thesilkminer.mc.fermion.companion.asm.utility.DummyFermionAsmLaunchPlugin;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
@@ -37,7 +35,7 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
     @Nonnull
     @Override
     public Set<String> getRootPackages() {
-        return ImmutableSet.of("net.thesilkminer.mc.fermion");
+        return ImmutableSet.of("net.thesilkminer.mc.fermion.companion");
     }
 
     @Override
@@ -51,13 +49,8 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
 
     private void registerTransformers() {
         /* Actual transformers */
-        //this.registerTransformer(new ModLoaderTransformer());
-        //this.registerTransformer(new ModListTransformer());
+        this.registerTransformer(new ModDiscovererTransformer(this));
         this.registerTransformer(new TransformingUtilitiesTransformer());
-
-        /* Vanity transformers */
-        //this.registerTransformer(new BackToSingleThreadsTransformer());
-        //this.registerTransformer(new StartupMessagesColorizerTransformer());
 
         /* Test transformers */
         this.registerTransformer(new TestHookingVanillaTransformer());
@@ -88,22 +81,13 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
             final Map<String, Transformer> transformersMap =
                     (Map<String, Transformer>) transformers.get(registry);
 
-            final List<PluginMetadata> dataList = Lists.newArrayList();
-            dataList.add(
-                    PluginMetadata.Builder.create("fermion.asm.service")
-                            .setName("Fermion ASM Service")
-                            .setDescription("This is where the magic happens")
-                            .setCredits("cpw for creating ModLauncher, sp614x for Optifine and its Transformer idea")
-                            .addAuthor("RE/SYST")
-                            .setDisplayUrl("https://thesilkminer.net/mc-mods/fermion")
-                            .setVersion("1.0.0")
-                            .build()
-            );
-            transformerMap.values().stream().map(Pair::getKey).forEach(dataList::add);
+            final List<LaunchPlugin> pluginsList = Lists.newArrayList();
+            pluginsList.add(new DummyFermionAsmLaunchPlugin());
+            transformerMap.values().stream().map(Pair::getValue).forEach(pluginsList::add);
 
-            //ModListTransformer.pluginMetadataList = dataList;
-            //ModListTransformer.transformers = Lists.newArrayList(transformersMap.keySet());
-            //ModListTransformer.registry = registry;
+            ModDiscovererTransformer.launchPlugins = pluginsList;
+            ModDiscovererTransformer.transformers = Lists.newArrayList(transformersMap.keySet());
+            ModDiscovererTransformer.registry = registry;
         } catch (@Nonnull final ReflectiveOperationException e) {
             e.printStackTrace(System.err);
         }
