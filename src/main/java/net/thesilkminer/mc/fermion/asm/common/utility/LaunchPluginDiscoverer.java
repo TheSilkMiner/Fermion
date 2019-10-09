@@ -24,8 +24,8 @@ package net.thesilkminer.mc.fermion.asm.common.utility;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import cpw.mods.gross.Java9ClassLoaderUtil;
 import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
-import net.thesilkminer.mc.fermion.asm.common.shade.cpw.mods.gross.Java9ClassLoaderUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -102,12 +102,12 @@ public final class LaunchPluginDiscoverer {
     }
 
     @Nonnull
-    public Iterable<LaunchPlugin> discover() {
+    public Iterable<LaunchPlugin> discover(@Nonnull final Path gameRoot) {
         LOGGER.i("Discovering Launch Plugins");
         final List<LaunchPlugin> launchPlugins = Lists.newArrayList();
         final ServiceLoader<LaunchPlugin> classPath = ServiceLoader.load(LaunchPlugin.class);
         for (@Nonnull final LaunchPlugin plugin : classPath) launchPlugins.add(plugin);
-        //launchPlugins.addAll(this.discoverFromPaths());
+        launchPlugins.addAll(this.discoverFromPaths(gameRoot));
         LOGGER.i("Discovered a total of " + this.discoverIteratorSize(launchPlugins) + " plugins");
         if (this.fermionJar == null) {
             LOGGER.w("We were unable to find the Fermion JAR file! If you are in a development environment, this is fine.");
@@ -118,9 +118,9 @@ public final class LaunchPluginDiscoverer {
     }
 
     @Nonnull
-    private List<LaunchPlugin> discoverFromPaths() {
+    private List<LaunchPlugin> discoverFromPaths(@Nonnull final Path gameRoot) {
         final List<LaunchPlugin> launchPlugins = Lists.newArrayList();
-        final List<Path> candidateFiles = this.discoverPaths();
+        final List<Path> candidateFiles = this.discoverPaths(gameRoot);
         final URL[] classPathUrls = Preconditions.checkNotNull(Java9ClassLoaderUtil.getSystemClassPathURLs());
         final LaunchPluginClassLoader loader = new LaunchPluginClassLoader(classPathUrls, this.getClass().getClassLoader());
         loader.addPaths(candidateFiles);
@@ -129,9 +129,9 @@ public final class LaunchPluginDiscoverer {
     }
 
     @Nonnull
-    private List<Path> discoverPaths() {
+    private List<Path> discoverPaths(@Nonnull final Path gameRoot) {
         if (this.transformersPaths.isEmpty()) {
-            this.transformersPaths.addAll(this.getCandidates(this.hackGameRootFromLauncher()));
+            this.transformersPaths.addAll(this.getCandidates(gameRoot));
         }
         return this.transformersPaths;
     }
@@ -148,7 +148,7 @@ public final class LaunchPluginDiscoverer {
     @Nonnull
     @SuppressWarnings("SpellCheckingInspection")
     private Path reflectLauncher() throws ReflectiveOperationException {
-        LOGGER.d("Attempting to obtain game directory through ModLauncher's internals. This may go really badly");
+        LOGGER.d("Attempting to obtain game directory through LaunchWrapper's internals. This may go really badly");
         final Class<?> launcherClass = Class.forName("cpw.mods.modlauncher.Launcher");
         final Field launcherInstance = this.getAccessible(launcherClass, "INSTANCE");
         final Field argumentHandlerField = this.getAccessible(launcherClass, "argumentHandler");
@@ -219,6 +219,8 @@ public final class LaunchPluginDiscoverer {
             if (this.examineZipFileForFermionJar(file)) {
                 LOGGER.i("Found Fermion JAR file '" + file + "'");
                 this.fermionJar = file;
+                LOGGER.i("Removing it from discovered paths");
+                paths.remove(file);
             }
         } catch (@Nonnull final IOException e) {
             throw new WrappedInputOutputException(e);

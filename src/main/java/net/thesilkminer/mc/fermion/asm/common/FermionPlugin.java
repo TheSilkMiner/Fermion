@@ -31,7 +31,7 @@ import java.util.Map;
 @IFMLLoadingPlugin.MCVersion("1.12.2")
 @IFMLLoadingPlugin.Name("Fermion ASM Service")
 @IFMLLoadingPlugin.SortingIndex(1001)
-@IFMLLoadingPlugin.TransformerExclusions({"net.thesilkminer.mc.fermion.asm", "net.thesilkminer.mc.fermion.companion.asm"})
+@IFMLLoadingPlugin.TransformerExclusions({"net.thesilkminer.mc.fermion.asm", "net.thesilkminer.mc.fermion.companion.asm", "cpw.mods.gross"})
 public final class FermionPlugin implements IFMLLoadingPlugin {
 
     static Map<String, Object> injectedData;

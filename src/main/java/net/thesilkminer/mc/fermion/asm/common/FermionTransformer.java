@@ -99,7 +99,9 @@ public final class FermionTransformer implements IClassTransformer {
     @Override
     public byte[] transform(@Nonnull final String name, @Nonnull final String transformedName, @Nonnull final byte[] basicClass) {
         if (data == null) {
-            LOGGER.e("No accept call has arrived: this is a serious error. Expect a crash in... right about now");
+            LOGGER.e("No accept call has arrived: this is a serious error.");
+            LOGGER.e("Transformation will not be available for class '" + transformedName + "'");
+            return basicClass;
         }
 
         if (data.emergencyMode) return basicClass;

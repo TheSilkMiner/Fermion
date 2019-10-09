@@ -102,7 +102,7 @@ public final class FermionTransformationSetup implements IFMLCallHook {
     private void onLoad() throws IncompatibleEnvironmentException {
         LOGGER.i("Fermion Transformer Service is being loaded");
         LOGGER.i("Attempting to discover Fermion Launch Plugins");
-        this.blackboard.accept(this.discoverer.discover(), this.data);
+        this.blackboard.accept(this.discoverer.discover(((File) this.data.get("mcLocation")).toPath()), this.data);
         LOGGER.i("Fermion Launch Plugins discovery completed");
     }
 
