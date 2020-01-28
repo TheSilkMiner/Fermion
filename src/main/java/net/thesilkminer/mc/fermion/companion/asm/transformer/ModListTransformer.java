@@ -245,6 +245,12 @@ public final class ModListTransformer extends AbstractTransformer {
                 mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "net/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder",
                         "setVersion", "(Ljava/lang/String;)Lnet/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder;", false);
 
+                if (metadata.getLogo() != null) {
+                    mv.visitLdcInsn(metadata.getLogo());
+                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "net/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder",
+                            "setLogoPath", "(Ljava/lang/String;)Lnet/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder;", false);
+                }
+
                 mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "net/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder",
                         "build", "()Lnet/thesilkminer/mc/fermion/asm/api/PluginMetadata;", false);
 
