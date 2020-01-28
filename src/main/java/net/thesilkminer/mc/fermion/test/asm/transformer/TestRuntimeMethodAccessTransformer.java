@@ -1,17 +1,20 @@
-package net.thesilkminer.mc.fermion.companion.asm.transformer.test;
+package net.thesilkminer.mc.fermion.test.asm.transformer;
 
 import com.google.common.collect.ImmutableList;
+import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.MethodDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
 import net.thesilkminer.mc.fermion.asm.prefab.transformer.RuntimeMethodAccessTransformer;
 
+import javax.annotation.Nonnull;
+
 public final class TestRuntimeMethodAccessTransformer extends RuntimeMethodAccessTransformer {
 
-    public TestRuntimeMethodAccessTransformer() {
+    public TestRuntimeMethodAccessTransformer(@Nonnull final LaunchPlugin owner) {
         super(
                 TransformerData.Builder.create()
-                        .setOwningPluginId("fermion.asm")
+                        .setOwningPlugin(owner)
                         .setName("test_runtime_method_at")
                         .setDescription("This is a test for the RuntimeMethodAT")
                         .setDisabledByDefault()

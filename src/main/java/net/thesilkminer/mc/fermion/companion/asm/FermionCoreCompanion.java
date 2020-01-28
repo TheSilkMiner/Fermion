@@ -11,12 +11,6 @@ import net.thesilkminer.mc.fermion.asm.prefab.AbstractLaunchPlugin;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.ModListTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.ModLoaderTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.TransformingUtilitiesTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestHookingVanillaTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeFieldAccessTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeMethodAccessTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestSingleTargetMethodTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestTargetMethodTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestTransformerAlwaysDisabled;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.vanity.BackToSingleThreadsTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.vanity.StartupMessagesColorizerTransformer;
 import org.apache.commons.lang3.tuple.Pair;
@@ -37,12 +31,12 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
     @Nonnull
     @Override
     public Set<String> getRootPackages() {
-        return ImmutableSet.of("net.thesilkminer.mc.fermion");
+        return ImmutableSet.of("net.thesilkminer.mc.fermion.companion.asm");
     }
 
     @Override
     protected void populateMetadata(@Nonnull final PluginMetadata.Builder metadataBuilder) {
-        metadataBuilder.setVersion("1.0.0")
+        metadataBuilder.setVersion("1.0.1")
                 .setName("Fermion Companion")
                 .addAuthor("TheSilkMiner")
                 .setCredits("cpw, LexManos, FML, and the Forge guys")
@@ -58,14 +52,6 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
         /* Vanity transformers */
         this.registerTransformer(new BackToSingleThreadsTransformer());
         this.registerTransformer(new StartupMessagesColorizerTransformer());
-
-        /* Test transformers */
-        this.registerTransformer(new TestHookingVanillaTransformer());
-        this.registerTransformer(new TestSingleTargetMethodTransformer());
-        this.registerTransformer(new TestTargetMethodTransformer());
-        this.registerTransformer(new TestRuntimeFieldAccessTransformer());
-        this.registerTransformer(new TestRuntimeMethodAccessTransformer());
-        this.registerTransformer(new TestTransformerAlwaysDisabled(this));
     }
 
     @Override
@@ -96,7 +82,7 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
                             .setCredits("cpw for creating ModLauncher, sp614x for Optifine and its Transformer idea")
                             .addAuthor("RE/SYST")
                             .setDisplayUrl("https://thesilkminer.net/mc-mods/fermion")
-                            .setVersion("1.0.0")
+                            .setVersion("1.0.1")
                             .build()
             );
             transformerMap.values().stream().map(Pair::getKey).forEach(dataList::add);

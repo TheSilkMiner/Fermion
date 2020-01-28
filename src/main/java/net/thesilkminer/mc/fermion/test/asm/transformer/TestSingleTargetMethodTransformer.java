@@ -1,6 +1,7 @@
-package net.thesilkminer.mc.fermion.companion.asm.transformer.test;
+package net.thesilkminer.mc.fermion.test.asm.transformer;
 
 import com.google.common.collect.ImmutableList;
+import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.MethodDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
@@ -14,10 +15,10 @@ import java.util.function.BiFunction;
 
 public final class TestSingleTargetMethodTransformer extends SingleTargetMethodTransformer {
 
-    public TestSingleTargetMethodTransformer() {
+    public TestSingleTargetMethodTransformer(@Nonnull final LaunchPlugin owner) {
         super(
                 TransformerData.Builder.create()
-                        .setOwningPluginId("fermion.asm")
+                        .setOwningPlugin(owner)
                         .setName("test_single_target_method_transformer")
                         .setDescription("This tests the SingleTargetMethodTransformer prefab")
                         .setDisabledByDefault()
