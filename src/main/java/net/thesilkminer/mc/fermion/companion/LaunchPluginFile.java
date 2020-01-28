@@ -12,7 +12,6 @@ import net.minecraftforge.forgespi.locating.IModLocator;
 
 import javax.annotation.Nonnull;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,6 +24,8 @@ public final class LaunchPluginFile extends ModFile {
     private static final class DummyModLocator implements IModLocator {
 
         private static final DummyModLocator INSTANCE = new DummyModLocator();
+
+        private IModFile fermionFile;
 
         private DummyModLocator() {}
 
@@ -43,10 +44,14 @@ public final class LaunchPluginFile extends ModFile {
         @Nonnull
         @Override
         public Path findPath(@Nonnull final IModFile modFile, @Nonnull final String... path) {
+            if (this.fermionFile == null) {
+                this.fermionFile = FMLLoader.getLoadingModList().getModFileById("fermion").getFile();
+            }
+
             if (path.length == 1 && Objects.equals(path[0], "pack.mcmeta")) {
-                return FMLLoader.getLoadingModList().getModFileById("fermion").getFile().findResource("dummy.mcmeta");
+                return this.fermionFile.findResource("dummy.mcmeta");
             } else {
-                return Paths.get(path[0], path);
+                return this.fermionFile.getLocator().findPath(this.fermionFile, path);
             }
         }
 
@@ -121,5 +126,10 @@ public final class LaunchPluginFile extends ModFile {
     @Override
     public IModFileInfo getModFileInfo() {
         return this.modFileInfo;
+    }
+
+    @Override
+    public Path getFilePath() {
+        return FMLLoader.getLoadingModList().getModFileById("fermion").getFile().getFilePath();
     }
 }
