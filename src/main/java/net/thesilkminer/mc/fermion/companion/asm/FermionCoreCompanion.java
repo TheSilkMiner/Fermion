@@ -38,6 +38,7 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
     protected void populateMetadata(@Nonnull final PluginMetadata.Builder metadataBuilder) {
         metadataBuilder.setVersion("1.0.1")
                 .setName("Fermion Companion")
+                .setLogoPath("fermion_logo.png")
                 .addAuthor("TheSilkMiner")
                 .setCredits("cpw, LexManos, FML, and the Forge guys")
                 .setDescription("Launch Plugin part of Fermion. Responsible for all the edits that Fermion itself performs.\nWhich ones you may ask? Well, you're seeing this, aren't you?");
@@ -78,6 +79,7 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
             dataList.add(
                     PluginMetadata.Builder.create("fermion.asm.service")
                             .setName("Fermion ASM Service")
+                            .setLogoPath("fermion_asm_service_logo.png")
                             .setDescription("This is where the magic happens")
                             .setCredits("cpw for creating ModLauncher, sp614x for Optifine and its Transformer idea")
                             .addAuthor("RE/SYST")

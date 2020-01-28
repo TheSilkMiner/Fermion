@@ -30,6 +30,7 @@ public final class FermionTestSuite extends AbstractLaunchPlugin {
     protected void populateMetadata(@Nonnull final PluginMetadata.Builder metadataBuilder) {
         metadataBuilder.setVersion("1.0.1")
                 .setName("Fermion Test Suite")
+                .setLogoPath("fermion_test_suite_logo.png")
                 .addAuthor("TheSilkMiner")
                 .setCredits("cpw, LexManos, FML, and the Forge guys")
                 .setDescription("Set of tests that check whether Fermion works without issues.\n" +
