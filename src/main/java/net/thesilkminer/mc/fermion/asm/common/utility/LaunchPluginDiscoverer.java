@@ -276,8 +276,11 @@ public final class LaunchPluginDiscoverer {
             final ZipEntry entry = this.getTargetEntry(jar, "META-INF/services/net.thesilkminer.mc.fermion.asm.api.LaunchPlugin");
             Objects.requireNonNull(entry);
             try (final BufferedReader stream = new BufferedReader(new InputStreamReader(jar.getInputStream(entry)))) {
-                final String line = stream.readLine();
-                plugins.add(this.loadLaunchPlugin(line, loader));
+                stream.lines()
+                        .map(String::trim)
+                        .filter(it -> !it.isEmpty())
+                        .map(it -> this.loadLaunchPlugin(it, loader))
+                        .forEach(plugins::add);
             }
             return null;
         });
