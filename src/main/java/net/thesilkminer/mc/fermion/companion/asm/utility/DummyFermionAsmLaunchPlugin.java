@@ -39,6 +39,7 @@ public final class DummyFermionAsmLaunchPlugin implements LaunchPlugin {
     public PluginMetadata getMetadata() {
         return PluginMetadata.Builder.create("fermion.asm.service")
                 .setName("Fermion ASM Service")
+                .setLogoPath("fermion_asm_service_logo.png")
                 .setDescription("This is where the magic happens")
                 .setCredits("cpw for creating ModLauncher, sp614x for Optifine and its Transformer idea")
                 .addAuthor("RE/SYST")
