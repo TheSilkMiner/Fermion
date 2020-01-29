@@ -70,10 +70,10 @@ public final class TestHookingVanillaTransformer extends SingleTargetMethodTrans
                 super.visitLineNumber(10 + 3, l0);
                 super.visitFieldInsn(Opcodes.GETSTATIC,
                         "net/minecraft/potion/PotionEffect",
-                        "LOGGER",
+                        MappingUtilities.INSTANCE.mapField("field_180155_a"),
                         "Lorg/apache/logging/log4j/Logger;");
                 super.visitMethodInsn(Opcodes.INVOKESTATIC,
-                        "net/thesilkminer/mc/fermion/companion/hook/PotionEffectHook",
+                        "net/thesilkminer/mc/fermion/test/hook/PotionEffectHook",
                         "logTest",
                         "(Lorg/apache/logging/log4j/Logger;)V",
                         false);
