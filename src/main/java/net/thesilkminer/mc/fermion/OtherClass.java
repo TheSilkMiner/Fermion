@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  TheSilkMiner
+ * Copyright (C) 2020  TheSilkMiner
  *
  * This file is part of Fermion.
  *

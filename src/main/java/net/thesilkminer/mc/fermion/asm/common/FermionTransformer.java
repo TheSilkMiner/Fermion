@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  TheSilkMiner
+ * Copyright (C) 2020  TheSilkMiner
  *
  * This file is part of Fermion.
  *
@@ -99,8 +99,7 @@ public final class FermionTransformer implements IClassTransformer {
     @Override
     public byte[] transform(@Nonnull final String name, @Nonnull final String transformedName, @Nonnull final byte[] basicClass) {
         if (data == null) {
-            LOGGER.e("No accept call has arrived: this is a serious error.");
-            LOGGER.e("Transformation will not be available for class '" + transformedName + "'");
+            LOGGER.e("Unable to transform class '" + transformedName + "': no Transformers were accepted");
             return basicClass;
         }
 
