@@ -43,7 +43,7 @@ public final class DummyFermionAsmLaunchPlugin implements LaunchPlugin {
                 .setCredits("cpw for creating ModLauncher, sp614x for Optifine and its Transformer idea")
                 .addAuthor("RE/SYST")
                 .setDisplayUrl("https://thesilkminer.net/mc-mods/fermion")
-                .setVersion("1.0.0")
+                .setVersion("1.0.1")
                 .build();
     }
 

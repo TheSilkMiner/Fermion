@@ -20,60 +20,51 @@
  * E-mail: thesilkminer <at> outlook <dot> com
  */
 
-package net.thesilkminer.mc.fermion.companion.asm.transformer.test;
+package net.thesilkminer.mc.fermion.test.asm.transformer;
 
 import com.google.common.collect.ImmutableList;
+import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
+import net.thesilkminer.mc.fermion.asm.api.descriptor.FieldDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.MethodDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
-import net.thesilkminer.mc.fermion.asm.prefab.transformer.RuntimeMethodAccessTransformer;
+import net.thesilkminer.mc.fermion.asm.prefab.transformer.RuntimeFieldAccessTransformer;
 
-public final class TestRuntimeMethodAccessTransformer extends RuntimeMethodAccessTransformer {
+import javax.annotation.Nonnull;
 
-    public TestRuntimeMethodAccessTransformer() {
+public final class TestRuntimeFieldAccessTransformer extends RuntimeFieldAccessTransformer {
+
+    public TestRuntimeFieldAccessTransformer(@Nonnull final LaunchPlugin owner) {
         super(
                 TransformerData.Builder.create()
-                        .setOwningPluginId("fermion.asm")
-                        .setName("test_runtime_method_at")
-                        .setDescription("This is a test for the RuntimeMethodAT")
+                        .setOwningPlugin(owner)
+                        .setName("test_runtime_field_at")
+                        .setDescription("This is a test for the RuntimeFieldAT")
                         .setDisabledByDefault()
                         .build(),
                 TargetDescriptor.Builder.create()
-                        .setTargetMethod(
+                        .setTargetField(
                                 ClassDescriptor.of("net.thesilkminer.mc.fermion.OtherClass"),
-                                MethodDescriptor.of(
-                                        "print",
-                                        ImmutableList.of(ClassDescriptor.of(String.class)),
-                                        ClassDescriptor.of(String.class)
-                                )
+                                FieldDescriptor.of("parameter", ClassDescriptor.of(String.class))
                         )
                         .setAccessorMethod(
                                 ClassDescriptor.of("net.thesilkminer.mc.fermion.hook.OtherClassHook"),
                                 MethodDescriptor.of(
-                                        "print",
-                                        ImmutableList.of(
-                                                ClassDescriptor.of("net.thesilkminer.mc.fermion.OtherClass"),
-                                                ClassDescriptor.of(String.class)
-                                        ),
-                                        ClassDescriptor.of(String.class)
-                                )
+                                        "getParameter",
+                                        ImmutableList.of(ClassDescriptor.of("net.thesilkminer.mc.fermion.OtherClass")),
+                                        ClassDescriptor.of(String.class))
                         )
                         .build(),
                 TargetDescriptor.Builder.create()
-                        .setTargetMethod(
+                        .setTargetField(
                                 ClassDescriptor.of("net.thesilkminer.mc.fermion.OtherClass"),
-                                MethodDescriptor.of(
-                                        "getId",
-                                        ImmutableList.of(ClassDescriptor.of(Object.class)),
-                                        ClassDescriptor.of(int.class)
-                                ),
-                                true
+                                FieldDescriptor.of("ID", ClassDescriptor.of(int.class), true)
                         )
                         .setAccessorMethod(
                                 ClassDescriptor.of("net.thesilkminer.mc.fermion.hook.OtherClassHook"),
                                 MethodDescriptor.of(
-                                        "getIdThroughMethod",
-                                        ImmutableList.of(ClassDescriptor.of(Object.class)),
+                                        "getId",
+                                        ImmutableList.of(),
                                         ClassDescriptor.of(int.class)
                                 )
                         )

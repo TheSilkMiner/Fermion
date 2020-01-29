@@ -20,10 +20,11 @@
  * E-mail: thesilkminer <at> outlook <dot> com
  */
 
-package net.thesilkminer.mc.fermion.companion.asm.transformer.test;
+package net.thesilkminer.mc.fermion.test.asm.transformer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.MethodDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
@@ -49,10 +50,10 @@ public final class TestTargetMethodTransformer extends TargetMethodTransformer {
             ImmutableList.of(),
             ClassDescriptor.of(void.class));
 
-    public TestTargetMethodTransformer() {
+    public TestTargetMethodTransformer(@Nonnull final LaunchPlugin owner) {
         super(
                 TransformerData.Builder.create()
-                        .setOwningPluginId("fermion.asm")
+                        .setOwningPlugin(owner)
                         .setName("test_target_method_transformer")
                         .setDescription("This is a test for the Target Method Transformer prefab")
                         .setDisabledByDefault()

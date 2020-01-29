@@ -20,7 +20,7 @@
  * E-mail: thesilkminer <at> outlook <dot> com
  */
 
-package net.thesilkminer.mc.fermion.companion.hook;
+package net.thesilkminer.mc.fermion.test.hook;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

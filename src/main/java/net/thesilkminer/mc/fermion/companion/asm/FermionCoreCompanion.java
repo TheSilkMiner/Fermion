@@ -32,12 +32,6 @@ import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerRegistry;
 import net.thesilkminer.mc.fermion.asm.prefab.AbstractLaunchPlugin;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.ModDiscovererTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.TransformingUtilitiesTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestHookingVanillaTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeFieldAccessTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestRuntimeMethodAccessTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestSingleTargetMethodTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestTargetMethodTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.test.TestTransformerAlwaysDisabled;
 import net.thesilkminer.mc.fermion.companion.asm.utility.DummyFermionAsmLaunchPlugin;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -57,12 +51,12 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
     @Nonnull
     @Override
     public Set<String> getRootPackages() {
-        return ImmutableSet.of("net.thesilkminer.mc.fermion.companion");
+        return ImmutableSet.of("net.thesilkminer.mc.fermion.companion.asm");
     }
 
     @Override
     protected void populateMetadata(@Nonnull final PluginMetadata.Builder metadataBuilder) {
-        metadataBuilder.setVersion("1.0.0")
+        metadataBuilder.setVersion("1.0.1")
                 .setName("Fermion Companion")
                 .addAuthor("TheSilkMiner")
                 .setCredits("cpw, LexManos, FML, and the Forge guys")
@@ -73,14 +67,6 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
         /* Actual transformers */
         this.registerTransformer(new ModDiscovererTransformer(this));
         this.registerTransformer(new TransformingUtilitiesTransformer());
-
-        /* Test transformers */
-        this.registerTransformer(new TestHookingVanillaTransformer());
-        this.registerTransformer(new TestSingleTargetMethodTransformer());
-        this.registerTransformer(new TestTargetMethodTransformer());
-        this.registerTransformer(new TestRuntimeFieldAccessTransformer());
-        this.registerTransformer(new TestRuntimeMethodAccessTransformer());
-        this.registerTransformer(new TestTransformerAlwaysDisabled(this));
     }
 
     @Override

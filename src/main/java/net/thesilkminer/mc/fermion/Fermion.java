@@ -79,7 +79,7 @@ public final class Fermion {
             CHECK_LOGGER.warn("Attempted to get ID of otherClass: expected " + expectedId + "; found " + idOfOtherClass);
             CHECK_LOGGER.warn("Attempted to call 'print' of otherClass: expected '" + expectedPrinted + "'; found '" + printedOfOtherClass + "'");
             CHECK_LOGGER.warn("Attempted to call 'getId' of otherClass: expected " + expectedIdThroughMethod + "; found " + idOfOtherClassThroughMethod);
-            CHECK_LOGGER.warn("If you've disabled the transformer, that's okay. If you haven't, report the issue on our GitHub!");
+            CHECK_LOGGER.warn("If you've disabled the testing transformer, that's okay. If you haven't, report the issue on our GitHub!");
         }
     }
 
