@@ -625,7 +625,7 @@ public final class PluginMetadata {
                 ", url='" + this.url + '\'' +
                 ", credits='" + this.credits + '\'' +
                 ", authors=" + this.authors +
-                ", description='" + this.description.replace("\n", "\\n").replace("\r", "\\r") + '\'' +
+                ", description='" + (this.description == null? "<null>" : this.description.replace("\n", "\\n").replace("\r", "\\r") + '\'') +
                 '}';
     }
 }
