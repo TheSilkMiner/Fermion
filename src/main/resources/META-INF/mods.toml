@@ -1,0 +1,29 @@
+modLoader="javafml"
+loaderVersion="[31,)"
+issueTrackerURL="https://github.com/TheSilkMiner/Fermion"
+
+[[mods]]
+    modId="fermion"
+    version="${file.jarVersion}"
+    displayName="Fermion"
+    displayURL="http://thesilkminer.net/mc-mod/fermion"
+    logoFile="fermion_logo.png"
+    credits="Thank cpw for making this workaround possible"
+    authors="TheSilkMiner (aka Silk)"
+    description='''
+    The Java coremodding API for Forge 1.14 and above.
+    Making non-JS coremods possible since 2019.
+    '''
+
+[[dependencies.fermion]]
+    modId="forge"
+    mandatory=true
+    versionRange="[31,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.fermion]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.15.2]"
+    ordering="NONE"
+    side="BOTH"
