@@ -22,7 +22,14 @@
 
 package net.thesilkminer.mc.fermion.asm.api;
 
+import net.thesilkminer.mc.fermion.asm.common.utility.Log;
+
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Collection of utilities used to map names from their obfuscated to their
@@ -38,8 +45,39 @@ public enum MappingUtilities {
      */
     INSTANCE;
 
-    // Mapping utilities is useless pre-1.13, because Fermion runs in an already
-    // de-obfuscated, MCP-named environment.
+    // Remapping in Forge 1.12.2 and lower is weird: it goes the opposite direction for some reason
+    // or at least this is what it looks like.
+
+    private final Log L = Log.of("Mapping Utilities");
+
+    private final Object target;
+    private final Field rawFieldMaps;
+    private final Field rawMethodMaps;
+
+    @SuppressWarnings("SpellCheckingInspection")
+    MappingUtilities() {
+        /*mutable*/ Field rawFieldMaps;
+        /*mutable*/ Field rawMethodMaps;
+        /*mutable*/ Object target;
+        try {
+            final Class<?> clazz = Class.forName("net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper");
+            final Field instance = clazz.getDeclaredField("INSTANCE");
+            instance.setAccessible(true);
+            target = instance.get(clazz);
+            rawFieldMaps = clazz.getDeclaredField("rawFieldMaps");
+            rawFieldMaps.setAccessible(true);
+            rawMethodMaps = clazz.getDeclaredField("rawMethodMaps");
+            rawMethodMaps.setAccessible(true);
+        } catch (@Nonnull final ReflectiveOperationException e) {
+            rawFieldMaps = null;
+            rawMethodMaps = null;
+            target = null;
+            L.e("Unable to retrieve renaming maps: this is a serious error! Remapping won't be available!", e);
+        }
+        this.rawFieldMaps = rawFieldMaps;
+        this.rawMethodMaps = rawMethodMaps;
+        this.target = target;
+    }
 
     /**
      * Maps the given obfuscated method name to its de-obfuscated counterpart
@@ -55,7 +93,12 @@ public enum MappingUtilities {
      */
     @Nonnull
     public String mapMethod(@Nonnull final String name) {
-        return name;
+        if (this.rawMethodMaps == null) {
+            L.w("Unable to remap method name '" + name + "': no remapping tables loaded");
+            return name;
+        }
+        final String mappedName = this.findMcpFromSrg(this.rawMethodMaps, name);
+        return mappedName == null? name : mappedName;
     }
 
     /**
@@ -72,6 +115,52 @@ public enum MappingUtilities {
      */
     @Nonnull
     public String mapField(@Nonnull final String name) {
-        return name;
+        if (this.rawFieldMaps == null) {
+            L.w("Unable to remap field name '" + name + "': no remapping tables loaded");
+            return name;
+        }
+        final String mappedName = this.findMcpFromSrg(this.rawFieldMaps, name);
+        return mappedName == null? name : mappedName;
+    }
+
+    @Nullable
+    private String findMcpFromSrg(@Nonnull final Field from, @Nonnull final String name) {
+        final Map<String, Map<String, String>> map = this.fieldToMap(from);
+        if (map == null) return null;
+        return map.values().stream()
+                .map(Map::entrySet)
+                .flatMap(Set::stream)
+                .filter(it -> this.isValidName(it.getKey(), name, from == this.rawFieldMaps))
+                .map(Map.Entry::getValue)
+                .findAny()
+                .orElse(null);
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    private Map<String, Map<String, String>> fieldToMap(@Nonnull final Field from) {
+        try {
+            from.setAccessible(true);
+            return (Map<String, Map<String, String>>) from.get(this.target);
+        } catch (@Nonnull final ReflectiveOperationException | ClassCastException e) {
+            L.e("Unable to reflectively obtain map from given fields! This is serious: remapping won't be available", e);
+            return null;
+        }
+    }
+
+    private boolean isValidName(@Nonnull final String name, @Nonnull final String target, final boolean parseField) {
+        return parseField? this.isValidFieldName(name, target) : this.isValidMethodName(name, target);
+    }
+
+    private boolean isValidFieldName(@Nonnull final String name, @Nonnull final String target) {
+        final String[] parts = name.split(Pattern.quote(":"));
+        if (parts.length != 2) throw new IllegalStateException("Invalid maps loaded: " + name + " does not respect the correct format");
+        return target.equals(parts[0]);
+    }
+
+    private boolean isValidMethodName(@Nonnull final String name, @Nonnull final String target) {
+        final String[] parts = name.split(Pattern.quote("("));
+        if (parts.length < 1) throw new IllegalStateException("Invalid maps loaded: " + name + " does not respect the correct format");
+        return target.equals(parts[1]);
     }
 }
