@@ -429,6 +429,12 @@ public final class ModDiscovererTransformer extends AbstractTransformer {
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "net/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder",
                     "setVersion", "(Ljava/lang/String;)Lnet/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder;", false);
 
+            if (metadata.getLogo() != null) {
+                mv.visitLdcInsn(metadata.getLogo());
+                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "net/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder",
+                        "setLogoPath", "(Ljava/lang/String;)Lnet/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder;", false);
+            }
+
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "net/thesilkminer/mc/fermion/asm/api/PluginMetadata$Builder",
                     "build", "()Lnet/thesilkminer/mc/fermion/asm/api/PluginMetadata;", false);
 
