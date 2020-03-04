@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import net.thesilkminer.mc.fermion.asm.api.PluginMetadata;
 import net.thesilkminer.mc.fermion.asm.prefab.AbstractLaunchPlugin;
 import net.thesilkminer.mc.fermion.test.asm.transformer.TestHookingVanillaTransformer;
+import net.thesilkminer.mc.fermion.test.asm.transformer.TestMethodNameRemappingTransformer;
 import net.thesilkminer.mc.fermion.test.asm.transformer.TestRuntimeFieldAccessTransformer;
 import net.thesilkminer.mc.fermion.test.asm.transformer.TestRuntimeMethodAccessTransformer;
 import net.thesilkminer.mc.fermion.test.asm.transformer.TestSingleTargetMethodTransformer;
@@ -61,6 +62,7 @@ public final class FermionTestSuite extends AbstractLaunchPlugin {
 
     private void registerTransformers() {
         this.registerTransformer(new TestHookingVanillaTransformer(this));
+        this.registerTransformer(new TestMethodNameRemappingTransformer(this));
         this.registerTransformer(new TestRuntimeFieldAccessTransformer(this));
         this.registerTransformer(new TestRuntimeMethodAccessTransformer(this));
         this.registerTransformer(new TestSingleTargetMethodTransformer(this));
