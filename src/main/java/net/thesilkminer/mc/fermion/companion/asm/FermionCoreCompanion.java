@@ -35,7 +35,7 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
 
     @Override
     protected void populateMetadata(@Nonnull final PluginMetadata.Builder metadataBuilder) {
-        metadataBuilder.setVersion("1.0.1")
+        metadataBuilder.setVersion("1.0.2")
                 .setName("Fermion Companion")
                 .setLogoPath("fermion_logo.png")
                 .addAuthor("TheSilkMiner")
@@ -82,7 +82,7 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
                             .setCredits("cpw for creating ModLauncher, sp614x for Optifine and its Transformer idea")
                             .addAuthor("RE/SYST")
                             .setDisplayUrl("https://thesilkminer.net/mc-mods/fermion")
-                            .setVersion("1.0.1")
+                            .setVersion("1.0.2")
                             .build()
             );
             transformerMap.values().stream().map(Pair::getKey).forEach(dataList::add);
