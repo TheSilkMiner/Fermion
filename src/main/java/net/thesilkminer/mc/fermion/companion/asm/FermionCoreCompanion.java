@@ -45,12 +45,12 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
 
     private void registerTransformers() {
         /* Actual transformers */
-        this.registerTransformer(new ModLoaderTransformer());
-        this.registerTransformer(new ModListTransformer());
-        this.registerTransformer(new TransformingUtilitiesTransformer());
+        this.registerTransformer(new ModLoaderTransformer(this));
+        this.registerTransformer(new ModListTransformer(this));
+        this.registerTransformer(new TransformingUtilitiesTransformer(this));
 
         /* Vanity transformers */
-        this.registerTransformer(new BackToSingleThreadsTransformer());
+        this.registerTransformer(new BackToSingleThreadsTransformer(this));
     }
 
     @Override

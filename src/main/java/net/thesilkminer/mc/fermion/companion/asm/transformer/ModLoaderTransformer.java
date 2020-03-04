@@ -1,5 +1,6 @@
 package net.thesilkminer.mc.fermion.companion.asm.transformer;
 
+import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
 import net.thesilkminer.mc.fermion.asm.prefab.AbstractTransformer;
@@ -139,10 +140,10 @@ public final class ModLoaderTransformer extends AbstractTransformer {
 
     private static final String GENERATED_LAMBDA_METHOD_NAME = "fermion$$lambda$$gatherAndInitializeMods$$generated$00_1_48_144";
 
-    public ModLoaderTransformer() {
+    public ModLoaderTransformer(@Nonnull final LaunchPlugin owner) {
         super(
                 TransformerData.Builder.create()
-                        .setOwningPluginId("fermion.asm")
+                        .setOwningPlugin(owner)
                         .setName("mod_loader_transformer")
                         .setDescription("Transforms the Mod Loader class to add some more messages to the loading screen")
                         .build(),
