@@ -29,7 +29,7 @@ public final class FermionTestSuite extends AbstractLaunchPlugin {
 
     @Override
     protected void populateMetadata(@Nonnull final PluginMetadata.Builder metadataBuilder) {
-        metadataBuilder.setVersion("1.0.1")
+        metadataBuilder.setVersion("1.0.2")
                 .setName("Fermion Test Suite")
                 .setLogoPath("fermion_test_suite_logo.png")
                 .addAuthor("TheSilkMiner")
