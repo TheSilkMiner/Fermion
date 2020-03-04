@@ -161,6 +161,6 @@ public enum MappingUtilities {
     private boolean isValidMethodName(@Nonnull final String name, @Nonnull final String target) {
         final String[] parts = name.split(Pattern.quote("("));
         if (parts.length < 1) throw new IllegalStateException("Invalid maps loaded: " + name + " does not respect the correct format");
-        return target.equals(parts[1]);
+        return target.equals(parts[0]);
     }
 }
