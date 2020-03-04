@@ -1,6 +1,7 @@
 package net.thesilkminer.mc.fermion.companion.asm.transformer.vanity;
 
 import com.google.common.collect.ImmutableList;
+import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.MethodDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
@@ -20,10 +21,10 @@ public final class BackToSingleThreadsTransformer extends SingleTargetMethodTran
     private static final Logger LOGGER = LogManager.getLogger("fermion.asm");
     private static final Marker MARKER = MarkerManager.getMarker("Back To Single Threads!");
 
-    public BackToSingleThreadsTransformer() {
+    public BackToSingleThreadsTransformer(@Nonnull final LaunchPlugin owner) {
         super(
                 TransformerData.Builder.create()
-                        .setOwningPluginId("fermion.asm")
+                        .setOwningPlugin(owner)
                         .setName("vanity_back_to_single_threads")
                         .setDescription("If enabled, this transformer makes the entire loading process go back to a single thread instead of being multi-threaded")
                         .setDisabledByDefault()

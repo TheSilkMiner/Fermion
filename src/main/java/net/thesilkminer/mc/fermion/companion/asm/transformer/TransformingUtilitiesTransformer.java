@@ -1,6 +1,7 @@
 package net.thesilkminer.mc.fermion.companion.asm.transformer;
 
 import com.google.common.collect.ImmutableList;
+import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.MethodDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
@@ -16,10 +17,10 @@ import java.util.function.BiFunction;
 
 public final class TransformingUtilitiesTransformer extends SingleTargetMethodTransformer {
 
-    public TransformingUtilitiesTransformer() {
+    public TransformingUtilitiesTransformer(@Nonnull final LaunchPlugin owner) {
         super(
                 TransformerData.Builder.create()
-                        .setOwningPluginId("fermion.asm")
+                        .setOwningPlugin(owner)
                         .setName("transforming_utilities")
                         .setDescription("This is a fundamental part of the API: do not disable")
                         .build(),

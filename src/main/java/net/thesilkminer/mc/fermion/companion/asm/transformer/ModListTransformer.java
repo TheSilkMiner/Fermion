@@ -1,6 +1,7 @@
 package net.thesilkminer.mc.fermion.companion.asm.transformer;
 
 import com.google.common.collect.Lists;
+import net.thesilkminer.mc.fermion.asm.api.LaunchPlugin;
 import net.thesilkminer.mc.fermion.asm.api.PluginMetadata;
 import net.thesilkminer.mc.fermion.asm.api.descriptor.ClassDescriptor;
 import net.thesilkminer.mc.fermion.asm.api.transformer.TransformerData;
@@ -121,10 +122,10 @@ public final class ModListTransformer extends AbstractTransformer {
     public static List<String> transformers = Lists.newArrayList();
     public static TransformerRegistry registry = null;
 
-    public ModListTransformer() {
+    public ModListTransformer(@Nonnull final LaunchPlugin owner) {
         super(
                 TransformerData.Builder.create()
-                        .setOwningPluginId("fermion.asm")
+                        .setOwningPlugin(owner)
                         .setName("mod_list_transformer")
                         .setDescription("Transforms the ModList class to allow injection into the loading process of our own LaunchPlugins")
                         .build(),
