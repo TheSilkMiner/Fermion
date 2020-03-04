@@ -56,7 +56,7 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
 
     @Override
     protected void populateMetadata(@Nonnull final PluginMetadata.Builder metadataBuilder) {
-        metadataBuilder.setVersion("1.0.1")
+        metadataBuilder.setVersion("1.0.2")
                 .setName("Fermion Companion")
                 .setLogoPath("fermion_logo.png")
                 .addAuthor("TheSilkMiner")
