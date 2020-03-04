@@ -12,7 +12,6 @@ import net.thesilkminer.mc.fermion.companion.asm.transformer.ModListTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.ModLoaderTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.TransformingUtilitiesTransformer;
 import net.thesilkminer.mc.fermion.companion.asm.transformer.vanity.BackToSingleThreadsTransformer;
-import net.thesilkminer.mc.fermion.companion.asm.transformer.vanity.StartupMessagesColorizerTransformer;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
@@ -52,7 +51,6 @@ public final class FermionCoreCompanion extends AbstractLaunchPlugin {
 
         /* Vanity transformers */
         this.registerTransformer(new BackToSingleThreadsTransformer());
-        this.registerTransformer(new StartupMessagesColorizerTransformer());
     }
 
     @Override
