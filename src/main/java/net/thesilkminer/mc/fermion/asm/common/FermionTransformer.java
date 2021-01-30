@@ -109,7 +109,12 @@ public final class FermionTransformer implements IClassTransformer {
         // to transform a class using MOJ names. And if they are... their problem
         final ClassDescriptor classDescriptor = ClassDescriptor.of(transformedName);
 
-        final EffectivelyFinalByteArray finalClassBytes = EffectivelyFinalByteArray.of(basicClass);
+        final EffectivelyFinalByteArray finalClassBytes;
+        try {
+            finalClassBytes = EffectivelyFinalByteArray.of(basicClass);
+        } catch (@Nonnull final NullPointerException e) {
+            return basicClass;
+        }
         final List<Transformer> transformers = Lists.newArrayList();
 
         transformers.addAll(Optional.ofNullable(data.classToTransformer.get(classDescriptor)).orElseGet(Lists::newArrayList));
